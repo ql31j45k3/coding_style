@@ -1,0 +1,13 @@
+system:
+  log:
+    level: debug
+    path: /Users/michael_kao/log/def_log
+  shutdown:
+    timeout: 10
+
+api:
+  timeout: 30
+  port: 8080
+
+gin:
+  mode: debug
