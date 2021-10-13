@@ -35,7 +35,7 @@
         * [fmt.Println 打印 nil slice or empty slice](#fmtprintln-打印-nil-slice-or-empty-slice)
         * [程序退出不等 goroutine 運行完畢](#程序退出不等-goroutine-運行完畢)
         * [不同 goroutine 之間不滿足順序一致性內存模型](#不同-goroutine-之間不滿足順序一致性內存模型)
-        * [go 內建數據結構的操作並不是同步的](#go-內建數據結構的操作並不是同步的)
+        * [go 內建數據結構的操作並不是並發安全的](#go-內建數據結構的操作並不是並發安全的)
 
 ## 參考連結
 常見錯誤參考以下連結。
@@ -560,6 +560,6 @@ func main() {
 }
 ```
 
-#### go 內建數據結構的操作並不是同步的
+#### go 內建數據結構的操作並不是並發安全的
 在 go 中使用 slice、map、array 等數據結構並沒有保證同步安全的，只有使用 sync 包的 func 達到同步安全，
 但其它部分如 channel、sync.Map 這些是支持同步安全，在使用 goroutine 時候要注意內部使用的數據結構是否同步安全的。
