@@ -22,6 +22,8 @@ type repositoryOrder interface {
 	GetOrders(mongoRS *mongo.Client, account string) ([]orderData, error)
 	GetOrderAggregate(mongoRS *mongo.Client, account string) ([]orderData, error)
 
+	ReplaceOne(mongoRS *mongo.Client, account string, oldData orderData) error
+
 	ExistsOrder(mongoRS *mongo.Client, account string) (bool, error)
 	UpdateOrder(mongoRS *mongo.Client, account string) error
 	UpdateManyOrder(mongoRS *mongo.Client, account string) error
@@ -95,6 +97,25 @@ func (om *orderMongo) GetOrderAggregate(mongoRS *mongo.Client, account string) (
 	}
 
 	return result, nil
+}
+
+func (om *orderMongo) ReplaceOne(mongoRS *mongo.Client, account string, oldData orderData) error {
+	condition := bson.M{
+		"account": account,
+	}
+
+	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	defer cancelCtx()
+
+	model := orderData{}
+	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+
+	if _, err := utilsDriver.ReplaceOne(ctx, collection, condition, oldData); err != nil {
+		return fmt.Errorf(tools.ErrorFormatReplaceOne, model.GetCollectionName(""), condition, err)
+	}
+
+	return nil
 }
 
 func (om *orderMongo) ExistsOrder(mongoRS *mongo.Client, account string) (bool, error) {
