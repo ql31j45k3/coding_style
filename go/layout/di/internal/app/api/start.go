@@ -36,8 +36,8 @@ func Start() {
 		return
 	}
 
-	driver.SetLogEnv()
-	configs.SetReloadFunc(driver.ReloadSetLogLevel)
+	utilsDriver.SetLogEnv()
+	configs.SetReloadFunc(utilsDriver.ReloadSetLogLevel)
 
 	go func() {
 		if configs.Env.GetPPROFBlockStatus() {
@@ -96,7 +96,7 @@ func Start() {
 	}
 
 	err = container.Invoke(func(cond utilsDriver.GinCond) {
-		driver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
+		utilsDriver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
 	})
 	if err != nil {
 		log.WithFields(log.Fields{

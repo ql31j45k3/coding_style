@@ -9,6 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/dig"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
@@ -22,13 +25,21 @@ func NewGin() *gin.Engine {
 	return router
 }
 
-func StartGin(cancelCtxStopNotify context.CancelFunc, stopFunc func() context.Context, r *gin.Engine) {
+type GinCond struct {
+	dig.In
+
+	R *gin.Engine
+
+	MongoRS *mongo.Client `name:"mongoRS"`
+}
+
+func StartGin(cancelCtxStopNotify context.CancelFunc, stopFunc func() context.Context, cond GinCond) {
 	// 控制調試日誌 log
 	gin.SetMode(configs.Gin.GetMode())
 
 	srv := &http.Server{
 		Addr:    configs.Host.GetAPIHost(),
-		Handler: r,
+		Handler: cond.R,
 	}
 
 	go func(srv *http.Server) {
@@ -58,6 +69,15 @@ func StartGin(cancelCtxStopNotify context.CancelFunc, stopFunc func() context.Co
 			"err": err,
 		}).Error("StartGin - srv.Shutdown")
 		return
+	}
+
+	ctxMongo, cancelCtxMongo := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	defer cancelCtxMongo()
+	if err := Disconnect(ctxMongo, cond.MongoRS); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("StartGin - Mongo Disconnect")
+		// 故意不中斷，後續流程有其他功能需做關閉動作
 	}
 
 	log.WithFields(log.Fields{
