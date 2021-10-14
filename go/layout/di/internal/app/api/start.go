@@ -3,19 +3,26 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"runtime"
 	"sync"
 
+	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
+	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/index"
 	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/member"
-
 	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/order"
+	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/system"
+	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
+
+	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/driver"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/dig"
 
-	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
-	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/driver"
+	_ "net/http/pprof"
 )
 
 func Start() {
@@ -24,8 +31,27 @@ func Start() {
 		panic(fmt.Errorf("start - configs.Start - %w", err))
 	}
 
-	utilsDriver.SetLogEnv()
-	configs.SetReloadFunc(utilsDriver.ReloadSetLogLevel)
+	// 順序必須在 configs 之後，需取得 設定參數
+	if configs.IsPrintVersion() {
+		return
+	}
+
+	driver.SetLogEnv()
+	configs.SetReloadFunc(driver.ReloadSetLogLevel)
+
+	go func() {
+		if configs.Env.GetPPROFBlockStatus() {
+			runtime.SetBlockProfileRate(configs.Env.GetPPROFBlockRate())
+		}
+
+		if configs.Env.GetPPROFMutexStatus() {
+			runtime.SetMutexProfileFraction(configs.Env.GetPPROFMutexRate())
+		}
+
+		if configs.Env.GetPPROFStatus() {
+			_ = http.ListenAndServe(configs.Host.GetPPROFAPIHost(), nil)
+		}
+	}()
 
 	container, err := buildContainer()
 	if err != nil {
@@ -41,6 +67,15 @@ func Start() {
 
 	stopJobFunc := stopJob{}
 
+	if err := container.Invoke(func(condAPI system.APIHealthCond) {
+		system.RegisterRouterHealth(condAPI)
+	}); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("Start - container.Invoke(system.RegisterRouterHealth)")
+		return
+	}
+
 	if err := container.Invoke(func(condAPI order.APIOrderCond) {
 		order.RegisterRouterOrder(ctxStopNotify, condAPI)
 	}); err != nil {
@@ -51,7 +86,17 @@ func Start() {
 	}
 
 	err = container.Invoke(func(in containerIn) {
-		utilsDriver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, in.R)
+		index.StartCreateIndex(in.MongoRS)
+	})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("Start - container.Invoke(index.StartCreateIndex)")
+		return
+	}
+
+	err = container.Invoke(func(cond utilsDriver.GinCond) {
+		driver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
 	})
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -98,6 +143,8 @@ type containerIn struct {
 	dig.In
 
 	R *gin.Engine
+
+	MongoRS *mongo.Client `name:"mongoRS"`
 }
 
 type containerProvide struct {
@@ -113,6 +160,14 @@ func buildContainer() (*dig.Container, error) {
 		return nil, fmt.Errorf("container.Provide(provideFunc.gin) - %w", err)
 	}
 
+	if err := container.Provide(provideFunc.gormM, dig.Name("dbM")); err != nil {
+		return nil, fmt.Errorf("container.Provide(provideFunc.gorm) - %w", err)
+	}
+
+	if err := container.Provide(provideFunc.mongoRS, dig.Name("mongoRS")); err != nil {
+		return nil, fmt.Errorf("container.Provide(provideFunc.mongoRS) - %w", err)
+	}
+
 	if err := member.RegisterContainer(container); err != nil {
 		return nil, fmt.Errorf("member.RegisterContainer - %w", err)
 	}
@@ -123,4 +178,24 @@ func buildContainer() (*dig.Container, error) {
 // gin 建立 gin Engine，設定 middleware
 func (cp *containerProvide) gin() *gin.Engine {
 	return utilsDriver.NewGin()
+}
+
+func (cp *containerProvide) gormM() (*gorm.DB, error) {
+	return utilsDriver.NewPostgresM(configs.Gorm.GetHost(), configs.Gorm.GetUser(), configs.Gorm.GetPassword(),
+		configs.Gorm.GetDBName(), configs.Gorm.GetPort(),
+		configs.Gorm.GetMaxIdle(), configs.Gorm.GetMaxOpen(), configs.Gorm.GetMaxLifetime(),
+		configs.Gorm.GetLogMode())
+}
+
+func (cp *containerProvide) mongoRS() (*mongo.Client, error) {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	defer cancelCtx()
+
+	return utilsDriver.NewMongoDBConnect(ctx, "",
+		utilsDriver.WithMongoHosts(configs.Mongo.GetHosts()),
+		utilsDriver.WithMongoAuth(configs.Mongo.GetAuthMechanism(), configs.Mongo.GetUsername(), configs.Mongo.GetPassword()),
+		utilsDriver.WithMongoReplicaSet(configs.Mongo.GetReplicaSet()),
+		utilsDriver.WithMongoPool(configs.Mongo.GetMinPoolSize(), configs.Mongo.GetMaxPoolSize(), configs.Mongo.GetMaxConnIdleTime()),
+		utilsDriver.WithMongoPoolMonitor(),
+	)
 }

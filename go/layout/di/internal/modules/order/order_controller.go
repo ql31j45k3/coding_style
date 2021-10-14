@@ -48,7 +48,11 @@ func (oca *orderControllerApp) get(c *gin.Context) {
 	condParameter.parse(c)
 
 	member := oca.condAPI.Member.GetMember()
-	orderInfo := oca.order.GetOrderInfo(member.Account)
+	orderInfo, err := oca.order.GetOrderInfo(oca.condAPI.MongoRS, member.Account)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
 
 	log.WithFields(log.Fields{
 		"account": member.Account,
@@ -59,7 +63,7 @@ func (oca *orderControllerApp) get(c *gin.Context) {
 		EndTime:   condParameter.endTime,
 		Timezone:  condParameter.timezone,
 
-		OrderInfo: orderInfo,
+		OrderInfo: orderInfo.OrderID,
 	}
-	c.JSON(http.StatusBadRequest, &result)
+	c.JSON(http.StatusOK, &result)
 }
