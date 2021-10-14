@@ -1,5 +1,5 @@
 # go coding style
-在 layout/di、layout/general 為示範的目錄結構程式，兩個差別在有沒有使用 DI 工具。
+在 layout 為示範的目錄結構程式。
 
 啟動需要此參數取得設定檔路徑 --configFile="path"
 
