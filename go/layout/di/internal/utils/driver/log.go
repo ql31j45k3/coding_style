@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"net"
 	"time"
 
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
@@ -20,6 +21,7 @@ func SetLogEnv() {
 	log.SetLevel(level)
 	log.SetFormatter(logFormat)
 
+	logAddServerIPHock()
 	logAddHookRotatelogs(logFormat)
 }
 
@@ -59,4 +61,48 @@ func ReloadSetLogLevel() {
 	}
 
 	log.SetLevel(level)
+}
+
+type serverIPHock struct {
+	_ struct{}
+}
+
+func (h *serverIPHock) Levels() []log.Level {
+	return log.AllLevels
+}
+
+func (h *serverIPHock) Fire(entry *log.Entry) error {
+	serverIP, err := h.getServerIP()
+	if err != nil {
+		return err
+	}
+
+	entry.Data["server_ip"] = serverIP
+
+	return nil
+}
+
+func (h *serverIPHock) getServerIP() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, v := range addrs {
+		ipNet, ok := v.(*net.IPNet)
+		if !ok {
+			continue
+		}
+
+		if !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil {
+			return ipNet.IP.String(), nil
+		}
+	}
+
+	return "", err
+}
+
+func logAddServerIPHock() {
+	hock := &serverIPHock{}
+	log.AddHook(hock)
 }
