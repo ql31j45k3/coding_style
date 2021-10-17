@@ -11,7 +11,7 @@ func newConfigEnv() *configEnv {
 	viper.SetDefault("api.timeout", time.Duration(30))
 
 	viper.SetDefault("system.log.level", "warn")
-	viper.SetDefault("system.log.path", "/var/log/ostrich/def_log")
+	viper.SetDefault("system.log.path", "/var/log/layout/def_log")
 
 	viper.SetDefault("system.shutdown.timeout", time.Duration(10))
 
