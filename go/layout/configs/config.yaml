@@ -12,12 +12,17 @@ system:
     mutex:
       status: true
       rate: 1000000000
+  applicationName: "local-layout-api"
+  profiler:
+    status: true
 
 api:
   timeout: 30
   port: 8080
   pprof:
     port: 6066
+  profiler:
+    domain: "http://127.0.0.1:4040"
 
 gin:
   mode: debug

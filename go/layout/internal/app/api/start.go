@@ -7,12 +7,16 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
 	configs2 "github.com/ql31j45k3/coding_style/go/layout/configs"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/index"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
 	order2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
 	system2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
+
+	transactionDep "github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
@@ -52,6 +56,20 @@ func Start() {
 			_ = http.ListenAndServe(configs2.Host.GetPPROFAPIHost(), nil)
 		}
 	}()
+
+	if configs.Env.GetProfilerStatus() {
+		_, err := profiler.Start(profiler.Config{
+			ApplicationName: configs.Env.GetApplicationName(),
+			ServerAddress:   configs.Host.GetProfilerAPIDomain(),
+		})
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"err": err,
+			}).Error("Start - profiler.Start")
+			return
+		}
+	}
 
 	container, err := buildContainer()
 	if err != nil {
@@ -170,6 +188,10 @@ func buildContainer() (*dig.Container, error) {
 
 	if err := member.RegisterContainer(container); err != nil {
 		return nil, fmt.Errorf("member.RegisterContainer - %w", err)
+	}
+
+	if err := transactionDep.RegisterContainerTransaction(container); err != nil {
+		return nil, fmt.Errorf("tranaactionDep.RegisterContainerTransaction - %w", err)
 	}
 
 	return container, nil

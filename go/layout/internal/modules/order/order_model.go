@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
+
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/tools"
 
@@ -26,6 +28,8 @@ type APIOrderCond struct {
 	R *gin.Engine
 
 	Member member.UseCaseMember
+
+	TransactionsDep dependency.UseCaseTransaction
 
 	MongoRS *mongo.Client `name:"mongoRS"`
 }
