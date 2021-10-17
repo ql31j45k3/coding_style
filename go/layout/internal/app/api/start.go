@@ -7,15 +7,15 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/index"
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/member"
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/order"
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/system"
+	configs2 "github.com/ql31j45k3/coding_style/go/layout/configs"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/index"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
+	order2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
+	system2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
-
-	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/driver"
 
 	log "github.com/sirupsen/logrus"
 
@@ -27,29 +27,29 @@ import (
 
 func Start() {
 	// 開始讀取設定檔，順序上必須為容器之前，執行容器內有需要設定檔 struct 取得參數
-	if err := configs.Start(); err != nil {
+	if err := configs2.Start(); err != nil {
 		panic(fmt.Errorf("start - configs.Start - %w", err))
 	}
 
 	// 順序必須在 configs 之後，需取得 設定參數
-	if configs.IsPrintVersion() {
+	if configs2.IsPrintVersion() {
 		return
 	}
 
-	utilsDriver.SetLogEnv()
-	configs.SetReloadFunc(utilsDriver.ReloadSetLogLevel)
+	driver.SetLogEnv()
+	configs2.SetReloadFunc(driver.ReloadSetLogLevel)
 
 	go func() {
-		if configs.Env.GetPPROFBlockStatus() {
-			runtime.SetBlockProfileRate(configs.Env.GetPPROFBlockRate())
+		if configs2.Env.GetPPROFBlockStatus() {
+			runtime.SetBlockProfileRate(configs2.Env.GetPPROFBlockRate())
 		}
 
-		if configs.Env.GetPPROFMutexStatus() {
-			runtime.SetMutexProfileFraction(configs.Env.GetPPROFMutexRate())
+		if configs2.Env.GetPPROFMutexStatus() {
+			runtime.SetMutexProfileFraction(configs2.Env.GetPPROFMutexRate())
 		}
 
-		if configs.Env.GetPPROFStatus() {
-			_ = http.ListenAndServe(configs.Host.GetPPROFAPIHost(), nil)
+		if configs2.Env.GetPPROFStatus() {
+			_ = http.ListenAndServe(configs2.Host.GetPPROFAPIHost(), nil)
 		}
 	}()
 
@@ -67,8 +67,8 @@ func Start() {
 
 	stopJobFunc := stopJob{}
 
-	if err := container.Invoke(func(condAPI system.APIHealthCond) {
-		system.RegisterRouterHealth(condAPI)
+	if err := container.Invoke(func(condAPI system2.APIHealthCond) {
+		system2.RegisterRouterHealth(condAPI)
 	}); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
@@ -76,8 +76,8 @@ func Start() {
 		return
 	}
 
-	if err := container.Invoke(func(condAPI order.APIOrderCond) {
-		order.RegisterRouterOrder(ctxStopNotify, condAPI)
+	if err := container.Invoke(func(condAPI order2.APIOrderCond) {
+		order2.RegisterRouterOrder(ctxStopNotify, condAPI)
 	}); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
@@ -95,8 +95,8 @@ func Start() {
 		return
 	}
 
-	err = container.Invoke(func(cond utilsDriver.GinCond) {
-		utilsDriver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
+	err = container.Invoke(func(cond driver.GinCond) {
+		driver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
 	})
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -177,25 +177,25 @@ func buildContainer() (*dig.Container, error) {
 
 // gin 建立 gin Engine，設定 middleware
 func (cp *containerProvide) gin() *gin.Engine {
-	return utilsDriver.NewGin()
+	return driver.NewGin()
 }
 
 func (cp *containerProvide) gormM() (*gorm.DB, error) {
-	return utilsDriver.NewPostgresM(configs.Gorm.GetHost(), configs.Gorm.GetUser(), configs.Gorm.GetPassword(),
-		configs.Gorm.GetDBName(), configs.Gorm.GetPort(),
-		configs.Gorm.GetMaxIdle(), configs.Gorm.GetMaxOpen(), configs.Gorm.GetMaxLifetime(),
-		configs.Gorm.GetLogMode())
+	return driver.NewPostgresM(configs2.Gorm.GetHost(), configs2.Gorm.GetUser(), configs2.Gorm.GetPassword(),
+		configs2.Gorm.GetDBName(), configs2.Gorm.GetPort(),
+		configs2.Gorm.GetMaxIdle(), configs2.Gorm.GetMaxOpen(), configs2.Gorm.GetMaxLifetime(),
+		configs2.Gorm.GetLogMode())
 }
 
 func (cp *containerProvide) mongoRS() (*mongo.Client, error) {
-	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	ctx, cancelCtx := context.WithTimeout(context.Background(), configs2.Mongo.GetTimeout())
 	defer cancelCtx()
 
-	return utilsDriver.NewMongoDBConnect(ctx, "",
-		utilsDriver.WithMongoHosts(configs.Mongo.GetHosts()),
-		utilsDriver.WithMongoAuth(configs.Mongo.GetAuthMechanism(), configs.Mongo.GetUsername(), configs.Mongo.GetPassword()),
-		utilsDriver.WithMongoReplicaSet(configs.Mongo.GetReplicaSet()),
-		utilsDriver.WithMongoPool(configs.Mongo.GetMinPoolSize(), configs.Mongo.GetMaxPoolSize(), configs.Mongo.GetMaxConnIdleTime()),
-		utilsDriver.WithMongoPoolMonitor(),
+	return driver.NewMongoDBConnect(ctx, "",
+		driver.WithMongoHosts(configs2.Mongo.GetHosts()),
+		driver.WithMongoAuth(configs2.Mongo.GetAuthMechanism(), configs2.Mongo.GetUsername(), configs2.Mongo.GetPassword()),
+		driver.WithMongoReplicaSet(configs2.Mongo.GetReplicaSet()),
+		driver.WithMongoPool(configs2.Mongo.GetMinPoolSize(), configs2.Mongo.GetMaxPoolSize(), configs2.Mongo.GetMaxConnIdleTime()),
+		driver.WithMongoPoolMonitor(),
 	)
 }

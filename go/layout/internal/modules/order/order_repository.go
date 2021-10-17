@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
+	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/tools"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
-	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/driver"
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/tools"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
