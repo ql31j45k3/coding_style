@@ -23,6 +23,8 @@ func newConfigEnv() *configEnv {
 	viper.SetDefault("system.pprof.mutex.status", false)
 	viper.SetDefault("system.pprof.mutex.rate", 1000000000)
 
+	viper.SetDefault("system.profiler.status", false)
+
 	return &configEnv{
 		apiTimeout: viper.GetDuration("api.timeout") * time.Second,
 
@@ -38,6 +40,10 @@ func newConfigEnv() *configEnv {
 
 		pprofMutexStatus: viper.GetBool("system.pprof.mutex.status"),
 		pprofMutexRate:   viper.GetInt("system.pprof.mutex.rate"),
+
+		applicationName: viper.GetString("system.applicationName"),
+
+		profilerStatus: viper.GetBool("system.profiler.status"),
 	}
 }
 
@@ -58,6 +64,10 @@ type configEnv struct {
 
 	pprofMutexStatus bool
 	pprofMutexRate   int
+
+	applicationName string
+
+	profilerStatus bool
 }
 
 func (c *configEnv) reload() {
@@ -104,4 +114,12 @@ func (c *configEnv) GetPPROFMutexStatus() bool {
 
 func (c *configEnv) GetPPROFMutexRate() int {
 	return c.pprofMutexRate
+}
+
+func (c *configEnv) GetApplicationName() string {
+	return c.applicationName
+}
+
+func (c *configEnv) GetProfilerStatus() bool {
+	return c.profilerStatus
 }

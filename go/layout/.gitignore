@@ -3,3 +3,4 @@
 /scripts/postgres/initdb.d
 /scripts/postgres/pgdata
 /scripts/postgres/postgres.conf
+/scripts/pyroscope/pyroscope-storage

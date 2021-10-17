@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  pyroscope:
+    image: 'pyroscope/pyroscope:0.2.0'
+    container_name: pyroscope
+    ports:
+      - 4040:4040
+    volumes:
+      - ./pyroscope-storage:/var/lib/pyroscope
+    command:
+      - server

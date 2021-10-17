@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
 	configs2 "github.com/ql31j45k3/coding_style/go/layout/configs"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/index"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
@@ -52,6 +54,20 @@ func Start() {
 			_ = http.ListenAndServe(configs2.Host.GetPPROFAPIHost(), nil)
 		}
 	}()
+
+	if configs.Env.GetProfilerStatus() {
+		_, err := profiler.Start(profiler.Config{
+			ApplicationName: configs.Env.GetApplicationName(),
+			ServerAddress:   configs.Host.GetProfilerAPIDomain(),
+		})
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"err": err,
+			}).Error("Start - profiler.Start")
+			return
+		}
+	}
 
 	container, err := buildContainer()
 	if err != nil {
