@@ -4,10 +4,47 @@ system:
     path: /Users/michael_kao/log/def_log
   shutdown:
     timeout: 10
+  pprof:
+    status: true
+    block:
+      status: true
+      rate: 1000000000
+    mutex:
+      status: true
+      rate: 1000000000
 
 api:
   timeout: 30
   port: 8080
+  pprof:
+    port: 6066
 
 gin:
   mode: debug
+
+database:
+  postgres:
+    master:
+      timeout: 300
+      host: 127.0.0.1
+      port: 5432
+      username: postgres
+      password: "1234"
+      dbName: postgres
+      conn:
+        maxIdle: 10
+        maxOpen: 100
+        maxLifetime: 600
+
+  mongo:
+    timeout: 300
+    hosts:
+      - "localhost:27017"
+    authMechanism: "Direct"
+    username:
+    password:
+    replicaSet:
+    pool:
+      minSize: 2
+      maxSize: 25
+      maxConnIdleTime: 300

@@ -1,0 +1,5 @@
+/db/mongo/data
+
+/db/postgres/initdb.d
+/db/postgres/pgdata
+/db/postgres/postgres.conf

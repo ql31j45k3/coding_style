@@ -1,6 +1,10 @@
 package order
 
-import "context"
+import (
+	"context"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 func newUseCaseOrder(repositoryOrder repositoryOrder) useCaseOrder {
 	return &order{
@@ -9,7 +13,7 @@ func newUseCaseOrder(repositoryOrder repositoryOrder) useCaseOrder {
 }
 
 type useCaseOrder interface {
-	GetOrderInfo(account string) string
+	GetOrderInfo(mongoRS *mongo.Client, account string) (orderData, error)
 
 	DoSyncRecord(ctxStopNotify context.Context)
 }
@@ -20,8 +24,8 @@ type order struct {
 	repositoryOrder
 }
 
-func (o *order) GetOrderInfo(account string) string {
-	return o.GetOrderID(account)
+func (o *order) GetOrderInfo(mongoRS *mongo.Client, account string) (orderData, error) {
+	return o.GetOrderID(mongoRS, account)
 }
 
 func (o *order) DoSyncRecord(ctxStopNotify context.Context) {

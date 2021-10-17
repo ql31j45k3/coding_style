@@ -2,6 +2,13 @@ package order
 
 import (
 	"fmt"
+	"strconv"
+
+	"github.com/shopspring/decimal"
+
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/tools"
 
 	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/member"
 
@@ -10,12 +17,18 @@ import (
 	"go.uber.org/dig"
 )
 
+const (
+	MongoOrder = "order"
+)
+
 type APIOrderCond struct {
 	dig.In
 
 	R *gin.Engine
 
 	Member member.UseCaseMember
+
+	MongoRS *mongo.Client `name:"mongoRS"`
 }
 
 type orderGetCond struct {
@@ -44,4 +57,35 @@ type responseOrderGet struct {
 	Timezone  string `json:"timezone"`
 
 	OrderInfo string `json:"order_info"`
+}
+
+type orderData struct {
+	_ struct{}
+
+	OrderID string `bson:"order_id"`
+
+	Amount float64 `bson:"amount"`
+}
+
+func (orderData) GetDatabase() string {
+	return tools.MongoDBTestAPI
+}
+
+func (orderData) GetCollectionName(_ string) string {
+	return MongoOrder
+}
+
+func (orderData) Conv(val interface{}) error {
+	v, ok := val.(*orderData)
+	if !ok {
+		return nil
+	}
+
+	var err error
+	v.Amount, err = strconv.ParseFloat(decimal.NewFromFloat(v.Amount).Truncate(2).String(), 64)
+	if err != nil {
+		return fmt.Errorf("strconv.ParseFloat - %w", err)
+	}
+
+	return nil
 }

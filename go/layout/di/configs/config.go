@@ -14,6 +14,9 @@ var (
 	Gin  *configGin
 	Env  *configEnv
 
+	Gorm *configGorm
+	Mongo *configMongo
+
 	reloadFunc []func()
 )
 
@@ -39,6 +42,9 @@ func Start() error {
 	Host = newConfigHost()
 	Gin = newConfigGin()
 	Env = newConfigEnv()
+
+	Gorm = newConfigGorm()
+	Mongo = newConfigMongo()
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {

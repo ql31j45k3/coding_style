@@ -1,0 +1,130 @@
+kind: pipeline
+type: docker
+name: default
+
+steps: 
+  - name: golangci-lint
+    image: golangci/golangci-lint:v1.31.0-alpine
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - push
+        - pull_request
+    commands:
+      - golangci-lint run -E bodyclose -E gocyclo --timeout=10m
+
+  - name: gosec
+    image: securego/gosec:v2.8.1
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - push
+        - pull_request
+    commands:
+      - gosec ./...
+
+  - name: test
+    image: golang:1.16.6
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - push
+        - pull_request
+    commands:
+      - go test -race -cover ./...
+
+  - name: build
+    image: golang:1.16.6
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - pull_request
+    commands:
+      - export GO111MODULE=on
+      - export CGO_ENABLED=1
+      - export GOOS=linux
+      - export GOARCH=amd64
+
+      - flagBuildDate="-X 'github.com/ql31j45k3/coding_style/go/layout/di/configs.buildDate=`date -u '+%Y/%m/%d %H:%M:%S %p %Z'`'"
+
+      - flagGitBranch="-X 'github.com/ql31j45k3/coding_style/go/layout/di/configs.gitBranch=${DRONE_COMMIT_BRANCH}'"
+      - flagGitTag="-X 'github.com/ql31j45k3/coding_style/go/layout/di/configs.gitTag=${DRONE_TAG}'"
+      - flagGitCommit="-X 'github.com/ql31j45k3/coding_style/go/layout/di/configs.gitCommit=${DRONE_COMMIT_SHA}'"
+
+      - go build -race -ldflags "$flagBuildDate $flagGitBranch $flagGitTag $flagGitCommit" -o layoutAPI ./cmd/api/main.go
+
+  - name: deploy-api
+    image: appleboy/drone-scp
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - pull_request
+    settings:
+      host:
+        from_secret: deploy_api_host
+      username:
+        from_secret: deploy_api_account
+      password: 
+        from_secret: deploy_api_password
+      port: 
+        - 22
+      command_timeout: 2m
+      target: /srv/api
+      source: 
+        - layoutAPI
+
+  - name: restart-api
+    image: appleboy/drone-ssh
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - pull_request
+    settings:
+      host:
+        from_secret: deploy_api_host
+      username:
+        from_secret: deploy_api_account
+      password: 
+        from_secret: deploy_api_password
+      port: 
+        - 22
+      command_timeout: 2m
+      script:
+        - systemctl stop layout-api
+        - systemctl start layout-api
+        - systemctl status layout-api
+
+  - name: slack
+    image: plugins/slack
+    when:
+      branch:
+        - develop
+      event:
+        - cron
+        - push
+        - pull_request
+      status:
+        - failure
+        - success
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      channel: drone-dev
+
+trigger:
+  event:
+    - cron
+    - push
+    - pull_request
