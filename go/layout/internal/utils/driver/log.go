@@ -4,8 +4,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
+
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
 	"github.com/rifflock/lfshook"
 	log "github.com/sirupsen/logrus"
 )

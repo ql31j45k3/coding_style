@@ -9,12 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/dig"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
 
 	"github.com/gin-gonic/gin"
 )

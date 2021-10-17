@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/tools"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/tools"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

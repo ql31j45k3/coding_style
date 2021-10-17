@@ -1,12 +1,12 @@
 package index
 
 import (
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/modules/order"
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
+	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/tools"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/ql31j45k3/coding_style/go/layout/di/configs"
-	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/driver"
-	"github.com/ql31j45k3/coding_style/go/layout/di/internal/utils/tools"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/x/bsonx"
 )
