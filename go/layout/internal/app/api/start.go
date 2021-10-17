@@ -16,6 +16,8 @@ import (
 	system2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
 
+	transactionDep "github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 
@@ -186,6 +188,10 @@ func buildContainer() (*dig.Container, error) {
 
 	if err := member.RegisterContainer(container); err != nil {
 		return nil, fmt.Errorf("member.RegisterContainer - %w", err)
+	}
+
+	if err := transactionDep.RegisterContainerTransaction(container); err != nil {
+		return nil, fmt.Errorf("tranaactionDep.RegisterContainerTransaction - %w", err)
 	}
 
 	return container, nil
