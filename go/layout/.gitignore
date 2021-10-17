@@ -1,5 +1,5 @@
-/db/mongo/data
+/scripts/mongo/data
 
-/db/postgres/initdb.d
-/db/postgres/pgdata
-/db/postgres/postgres.conf
+/scripts/postgres/initdb.d
+/scripts/postgres/pgdata
+/scripts/postgres/postgres.conf
