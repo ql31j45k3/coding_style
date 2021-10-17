@@ -27,7 +27,7 @@ database:
     master:
       timeout: 300
       host: 127.0.0.1
-      port: 5436
+      port: 5432
       username: postgres
       password: "1234"
       dbName: postgres
@@ -39,7 +39,7 @@ database:
   mongo:
     timeout: 300
     hosts:
-      - "localhost:27020"
+      - "localhost:27017"
     authMechanism: "Direct"
     username:
     password:
