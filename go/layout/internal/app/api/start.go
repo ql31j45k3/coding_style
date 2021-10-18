@@ -12,8 +12,8 @@ import (
 	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
 	"github.com/ql31j45k3/coding_style/go/layout/configs"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
-	order "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
-	system "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
 
 	transactionDep "github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
