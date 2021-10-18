@@ -13,7 +13,7 @@ import (
 	"github.com/ql31j45k3/coding_style/go/layout/configs"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
 	order "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
-	system2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
+	system "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
 
 	transactionDep "github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
@@ -94,8 +94,8 @@ func Start() {
 		return
 	}
 
-	if err := container.Invoke(func(condAPI system2.APIHealthCond) {
-		system2.RegisterRouterHealth(condAPI)
+	if err := container.Invoke(func(condAPI system.APIHealthCond) {
+		system.RegisterRouterHealth(condAPI)
 	}); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
