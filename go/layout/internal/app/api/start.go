@@ -11,8 +11,6 @@ import (
 
 	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
 	"github.com/ql31j45k3/coding_style/go/layout/configs"
-	configs2 "github.com/ql31j45k3/coding_style/go/layout/configs"
-	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/index"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
 	order2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
 	system2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
@@ -33,29 +31,29 @@ import (
 
 func Start() {
 	// 開始讀取設定檔，順序上必須為容器之前，執行容器內有需要設定檔 struct 取得參數
-	if err := configs2.Start(); err != nil {
+	if err := configs.Start(); err != nil {
 		panic(fmt.Errorf("start - configs.Start - %w", err))
 	}
 
 	// 順序必須在 configs 之後，需取得 設定參數
-	if configs2.IsPrintVersion() {
+	if configs.IsPrintVersion() {
 		return
 	}
 
 	driver.SetLogEnv()
-	configs2.SetReloadFunc(driver.ReloadSetLogLevel)
+	configs.SetReloadFunc(driver.ReloadSetLogLevel)
 
 	go func() {
-		if configs2.Env.GetPPROFBlockStatus() {
-			runtime.SetBlockProfileRate(configs2.Env.GetPPROFBlockRate())
+		if configs.Env.GetPPROFBlockStatus() {
+			runtime.SetBlockProfileRate(configs.Env.GetPPROFBlockRate())
 		}
 
-		if configs2.Env.GetPPROFMutexStatus() {
-			runtime.SetMutexProfileFraction(configs2.Env.GetPPROFMutexRate())
+		if configs.Env.GetPPROFMutexStatus() {
+			runtime.SetMutexProfileFraction(configs.Env.GetPPROFMutexRate())
 		}
 
-		if configs2.Env.GetPPROFStatus() {
-			_ = http.ListenAndServe(configs2.Host.GetPPROFAPIHost(), nil)
+		if configs.Env.GetPPROFStatus() {
+			_ = http.ListenAndServe(configs.Host.GetPPROFAPIHost(), nil)
 		}
 	}()
 
@@ -114,16 +112,6 @@ func Start() {
 		return
 	}
 
-	err = container.Invoke(func(in containerIn) {
-		index.StartCreateIndex(in.MongoRS)
-	})
-	if err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Error("Start - container.Invoke(index.StartCreateIndex)")
-		return
-	}
-
 	err = container.Invoke(func(cond driver.GinCond) {
 		driver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
 	})
@@ -168,14 +156,6 @@ func (s *stopJob) add(f func()) {
 	s.stopFunctions = append(s.stopFunctions, f)
 }
 
-type containerIn struct {
-	dig.In
-
-	R *gin.Engine
-
-	MongoRS *mongo.Client `name:"mongoRS"`
-}
-
 type containerProvide struct {
 	_ struct{}
 }
@@ -214,21 +194,21 @@ func (cp *containerProvide) gin() *gin.Engine {
 }
 
 func (cp *containerProvide) gormM() (*gorm.DB, error) {
-	return driver.NewPostgresM(configs2.Gorm.GetHost(), configs2.Gorm.GetUser(), configs2.Gorm.GetPassword(),
-		configs2.Gorm.GetDBName(), configs2.Gorm.GetPort(),
-		configs2.Gorm.GetMaxIdle(), configs2.Gorm.GetMaxOpen(), configs2.Gorm.GetMaxLifetime(),
-		configs2.Gorm.GetLogMode())
+	return driver.NewPostgresM(configs.Gorm.GetHost(), configs.Gorm.GetUser(), configs.Gorm.GetPassword(),
+		configs.Gorm.GetDBName(), configs.Gorm.GetPort(),
+		configs.Gorm.GetMaxIdle(), configs.Gorm.GetMaxOpen(), configs.Gorm.GetMaxLifetime(),
+		configs.Gorm.GetLogMode())
 }
 
 func (cp *containerProvide) mongoRS() (*mongo.Client, error) {
-	ctx, cancelCtx := context.WithTimeout(context.Background(), configs2.Mongo.GetTimeout())
+	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
 	defer cancelCtx()
 
 	return driver.NewMongoDBConnect(ctx, "",
-		driver.WithMongoHosts(configs2.Mongo.GetHosts()),
-		driver.WithMongoAuth(configs2.Mongo.GetAuthMechanism(), configs2.Mongo.GetUsername(), configs2.Mongo.GetPassword()),
-		driver.WithMongoReplicaSet(configs2.Mongo.GetReplicaSet()),
-		driver.WithMongoPool(configs2.Mongo.GetMinPoolSize(), configs2.Mongo.GetMaxPoolSize(), configs2.Mongo.GetMaxConnIdleTime()),
+		driver.WithMongoHosts(configs.Mongo.GetHosts()),
+		driver.WithMongoAuth(configs.Mongo.GetAuthMechanism(), configs.Mongo.GetUsername(), configs.Mongo.GetPassword()),
+		driver.WithMongoReplicaSet(configs.Mongo.GetReplicaSet()),
+		driver.WithMongoPool(configs.Mongo.GetMinPoolSize(), configs.Mongo.GetMaxPoolSize(), configs.Mongo.GetMaxConnIdleTime()),
 		driver.WithMongoPoolMonitor(),
 	)
 }
