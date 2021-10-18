@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/example"
+
 	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
 	"github.com/ql31j45k3/coding_style/go/layout/configs"
 	configs2 "github.com/ql31j45k3/coding_style/go/layout/configs"
@@ -84,6 +86,15 @@ func Start() {
 	defer cancelCtxStopNotify()
 
 	stopJobFunc := stopJob{}
+
+	if err := container.Invoke(func(condAPI example.APIExampleCond) {
+		example.RegisterRouter(ctxStopNotify, stopJobFunc.add, condAPI)
+	}); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("Start - container.Invoke(example.RegisterRouter)")
+		return
+	}
 
 	if err := container.Invoke(func(condAPI system2.APIHealthCond) {
 		system2.RegisterRouterHealth(condAPI)

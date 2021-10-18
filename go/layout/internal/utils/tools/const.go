@@ -5,6 +5,10 @@ const (
 )
 
 const (
+	DefaultNotAssignInt = -1
+)
+
+const (
 	MongoDBDuplicateKey = "E11000"
 
 	TimezoneUTC    = "UTC"
