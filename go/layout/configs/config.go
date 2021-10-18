@@ -14,8 +14,10 @@ var (
 	Gin  *configGin
 	Env  *configEnv
 
-	Gorm *configGorm
+	Gorm  *configGorm
 	Mongo *configMongo
+
+	Cron *configCron
 
 	reloadFunc []func()
 )
@@ -46,9 +48,12 @@ func Start() error {
 	Gorm = newConfigGorm()
 	Mongo = newConfigMongo()
 
+	Cron = newConfigCron()
+
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		Env.reload()
+		Cron.reload()
 
 		for _, f := range reloadFunc {
 			f()

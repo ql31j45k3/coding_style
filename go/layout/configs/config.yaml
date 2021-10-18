@@ -53,3 +53,16 @@ database:
       minSize: 2
       maxSize: 25
       maxConnIdleTime: 300
+
+cron:
+  enforce:
+    transaction:
+      status: false
+  order:
+#    spec: "1 * * * *"
+    spec: "@every 10s"
+    status: true
+  transaction:
+#    spec: "1 * * * *"
+    spec: "@every 5s"
+    status: true
