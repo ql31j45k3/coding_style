@@ -12,7 +12,7 @@ import (
 	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
 	"github.com/ql31j45k3/coding_style/go/layout/configs"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
-	order2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
+	order "github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
 	system2 "github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
 
@@ -103,8 +103,8 @@ func Start() {
 		return
 	}
 
-	if err := container.Invoke(func(condAPI order2.APIOrderCond) {
-		order2.RegisterRouterOrder(ctxStopNotify, condAPI)
+	if err := container.Invoke(func(condAPI order.APIOrderCond) {
+		order.RegisterRouterOrder(ctxStopNotify, condAPI)
 	}); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
