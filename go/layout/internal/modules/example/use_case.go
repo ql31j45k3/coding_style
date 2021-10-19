@@ -124,8 +124,6 @@ func (e *example) getGoroutineStatus(c *gin.Context, ids []string, task *taskMap
 			return
 		}
 
-		fmt.Println(v)
-
 		temp := responseTaskStatus{
 			TaskID: id,
 
