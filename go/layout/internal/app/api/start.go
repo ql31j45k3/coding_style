@@ -156,10 +156,6 @@ func (s *stopJob) add(f func()) {
 	s.stopFunctions = append(s.stopFunctions, f)
 }
 
-type containerProvide struct {
-	_ struct{}
-}
-
 // buildContainer 建立 DI 容器，提供各個函式的 input 參數
 func buildContainer() (*dig.Container, error) {
 	container := dig.New()
@@ -186,6 +182,10 @@ func buildContainer() (*dig.Container, error) {
 	}
 
 	return container, nil
+}
+
+type containerProvide struct {
+	_ struct{}
 }
 
 // gin 建立 gin Engine，設定 middleware
