@@ -1,4 +1,4 @@
-# cmd
+# app
 
 ## shutdown
 排程服務與 API 服務 均有做監控 kill or kill -2 指令，
