@@ -14,7 +14,7 @@ import (
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
 	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
-	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
+	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
 
 	transactionDep "github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
 
@@ -40,8 +40,8 @@ func Start() {
 		return
 	}
 
-	driver.SetLogEnv()
-	configs.SetReloadFunc(driver.ReloadSetLogLevel)
+	utilsDriver.SetLogEnv()
+	configs.SetReloadFunc(utilsDriver.ReloadSetLogLevel)
 
 	go func() {
 		if configs.Env.GetPPROFBlockStatus() {
@@ -112,8 +112,8 @@ func Start() {
 		return
 	}
 
-	err = container.Invoke(func(cond driver.GinCond) {
-		driver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
+	err = container.Invoke(func(cond utilsDriver.GinCond) {
+		utilsDriver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
 	})
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -190,11 +190,11 @@ func buildContainer() (*dig.Container, error) {
 
 // gin 建立 gin Engine，設定 middleware
 func (cp *containerProvide) gin() *gin.Engine {
-	return driver.NewGin()
+	return utilsDriver.NewGin()
 }
 
 func (cp *containerProvide) gormM() (*gorm.DB, error) {
-	return driver.NewPostgresM(configs.Gorm.GetHost(), configs.Gorm.GetUser(), configs.Gorm.GetPassword(),
+	return utilsDriver.NewPostgresM(configs.Gorm.GetHost(), configs.Gorm.GetUser(), configs.Gorm.GetPassword(),
 		configs.Gorm.GetDBName(), configs.Gorm.GetPort(),
 		configs.Gorm.GetMaxIdle(), configs.Gorm.GetMaxOpen(), configs.Gorm.GetMaxLifetime(),
 		configs.Gorm.GetLogMode())
@@ -204,11 +204,11 @@ func (cp *containerProvide) mongoRS() (*mongo.Client, error) {
 	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
 	defer cancelCtx()
 
-	return driver.NewMongoDBConnect(ctx, "",
-		driver.WithMongoHosts(configs.Mongo.GetHosts()),
-		driver.WithMongoAuth(configs.Mongo.GetAuthMechanism(), configs.Mongo.GetUsername(), configs.Mongo.GetPassword()),
-		driver.WithMongoReplicaSet(configs.Mongo.GetReplicaSet()),
-		driver.WithMongoPool(configs.Mongo.GetMinPoolSize(), configs.Mongo.GetMaxPoolSize(), configs.Mongo.GetMaxConnIdleTime()),
-		driver.WithMongoPoolMonitor(),
+	return utilsDriver.NewMongoDBConnect(ctx, "",
+		utilsDriver.WithMongoHosts(configs.Mongo.GetHosts()),
+		utilsDriver.WithMongoAuth(configs.Mongo.GetAuthMechanism(), configs.Mongo.GetUsername(), configs.Mongo.GetPassword()),
+		utilsDriver.WithMongoReplicaSet(configs.Mongo.GetReplicaSet()),
+		utilsDriver.WithMongoPool(configs.Mongo.GetMinPoolSize(), configs.Mongo.GetMaxPoolSize(), configs.Mongo.GetMaxConnIdleTime()),
+		utilsDriver.WithMongoPoolMonitor(),
 	)
 }
