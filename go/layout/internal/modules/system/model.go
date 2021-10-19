@@ -15,3 +15,9 @@ type APIHealthCond struct {
 	DBM     *gorm.DB      `name:"dbM"`
 	MongoRS *mongo.Client `name:"mongoRS"`
 }
+
+type APIDocCond struct {
+	dig.In
+
+	R *gin.Engine
+}

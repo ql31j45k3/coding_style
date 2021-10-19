@@ -103,6 +103,15 @@ func Start() {
 		return
 	}
 
+	if err := container.Invoke(func(condAPI system.APIDocCond) {
+		system.RegisterRouterAPIDoc(condAPI)
+	}); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("Start - container.Invoke(system.RegisterRouterAPIDoc)")
+		return
+	}
+
 	if err := container.Invoke(func(condAPI order.APIOrderCond) {
 		order.RegisterRouterOrder(ctxStopNotify, condAPI)
 	}); err != nil {
