@@ -1,34 +1,38 @@
-package api
+package schedule
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
-	"sync"
+	"syscall"
+	"time"
 
-	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/example"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
-	"github.com/ql31j45k3/coding_style/go/layout/configs"
-	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/member"
-	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/order"
-	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/system"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/utils/tools"
+
+	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
+
 	utilsDriver "github.com/ql31j45k3/coding_style/go/layout/internal/utils/driver"
 
 	transactionDep "github.com/ql31j45k3/coding_style/go/layout/internal/modules/transaction/dependency"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"gorm.io/gorm"
-
-	log "github.com/sirupsen/logrus"
-
-	"github.com/gin-gonic/gin"
+	"github.com/ql31j45k3/coding_style/go/layout/configs"
+	"github.com/ql31j45k3/coding_style/go/layout/internal/modules/index"
 	"go.uber.org/dig"
+	"gorm.io/gorm"
 
 	_ "net/http/pprof"
 )
 
+// Start 控制服務流程、呼叫的依賴性
 func Start() {
 	// 開始讀取設定檔，順序上必須為容器之前，執行容器內有需要設定檔 struct 取得參數
 	if err := configs.Start(); err != nil {
@@ -79,91 +83,83 @@ func Start() {
 		return
 	}
 
+	c := newCron()
+	jp := newJobPreconditions()
+
 	ctxStopNotify, cancelCtxStopNotify := context.WithCancel(context.Background())
 	// 注意: cancelCtx 底層保證多個調用，只會執行一次
 	defer cancelCtxStopNotify()
 
-	stopJobFunc := stopJob{}
-
-	if err := container.Invoke(func(condAPI example.APIExampleCond) {
-		example.RegisterRouter(ctxStopNotify, stopJobFunc.add, condAPI)
-	}); err != nil {
+	// 調用其他函式，函式參數容器會依照 Provide 提供後自行匹配
+	if err := run(ctxStopNotify, c, jp, container); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("Start - container.Invoke(example.RegisterRouter)")
+		}).Error("Start - startRunJob")
+		//nolint:govet
 		return
 	}
 
-	if err := container.Invoke(func(condAPI system.APIHealthCond) {
-		system.RegisterRouterHealth(condAPI)
-	}); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Error("Start - container.Invoke(system.RegisterRouterHealth)")
-		return
-	}
+	c.Start()
+	jp.start(ctxStopNotify)
 
-	if err := container.Invoke(func(condAPI order.APIOrderCond) {
-		order.RegisterRouterOrder(ctxStopNotify, condAPI)
-	}); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Error("Start - container.Invoke(order.RegisterRouterOrder)")
-		return
-	}
-
-	err = container.Invoke(func(cond utilsDriver.GinCond) {
-		utilsDriver.StartGin(cancelCtxStopNotify, stopJobFunc.stop, cond)
+	err = container.Invoke(func(in containerIn) {
+		shutdown(cancelCtxStopNotify, c, in.MongoRS)
 	})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("Start - utilsDriver.StartGin")
+		}).Error("Start - shutdown")
 		return
 	}
 }
 
-// stopJob 為避免其它 package 需 import 此包 package，故用傳遞 func 方式提供功能給其它模組使用，
-// 依賴關係都是 start.go 單向 import 其它 package 包功能
-type stopJob struct {
-	_ struct{}
+func newCron() *cron.Cron {
+	location, err := time.LoadLocation(tools.TimezoneTaipei)
+	if err != nil {
+		panic(err)
+	}
 
-	sync.Mutex
-	stopFunctions []func()
+	cronLog := cron.VerbosePrintfLogger(log.StandardLogger())
+
+	return cron.New(cron.WithLocation(location), cron.WithChain(cron.Recover(cronLog)), cron.WithLogger(cronLog))
 }
 
-func (s *stopJob) stop() context.Context {
-	ctx, cancelCtx := context.WithCancel(context.Background())
+func shutdown(cancelCtxStopNotify context.CancelFunc, c *cron.Cron, mongoRS *mongo.Client) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 
-	go func(s *stopJob, cancelCtx context.CancelFunc) {
-		s.Lock()
-		defer s.Unlock()
+	// 注意: 業務邏輯有做 goroutine 需用 cancel 通知，確保 goroutine 都有正常中止
+	cancelCtxStopNotify()
 
-		defer cancelCtx()
+	ctxStop := c.Stop()
+	<-ctxStop.Done()
 
-		for _, f := range s.stopFunctions {
-			f()
-		}
-	}(s, cancelCtx)
+	ctxMongo, cancelCtxMongo := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	defer cancelCtxMongo()
+	if err := utilsDriver.Disconnect(ctxMongo, mongoRS); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("shutdown - Mongo Disconnect")
+		// 故意不中斷，後續流程有其他功能需做關閉動作
+	}
 
-	return ctx
+	log.WithFields(log.Fields{
+		"shutdownTimeout": fmt.Sprintf("%ds", int64(configs.Env.GetShutdownTimeout()/time.Second)),
+	}).Info("shutdown - Server exiting")
 }
 
-func (s *stopJob) add(f func()) {
-	s.Lock()
-	defer s.Unlock()
+type containerIn struct {
+	dig.In
 
-	s.stopFunctions = append(s.stopFunctions, f)
+	DBM     *gorm.DB      `name:"dbM"`
+	MongoRS *mongo.Client `name:"mongoRS"`
 }
 
 // buildContainer 建立 DI 容器，提供各個函式的 input 參數
 func buildContainer() (*dig.Container, error) {
 	container := dig.New()
 	provideFunc := containerProvide{}
-
-	if err := container.Provide(provideFunc.gin); err != nil {
-		return nil, fmt.Errorf("container.Provide(provideFunc.gin) - %w", err)
-	}
 
 	if err := container.Provide(provideFunc.gormM, dig.Name("dbM")); err != nil {
 		return nil, fmt.Errorf("container.Provide(provideFunc.gorm) - %w", err)
@@ -188,11 +184,6 @@ type containerProvide struct {
 	_ struct{}
 }
 
-// gin 建立 gin Engine，設定 middleware
-func (cp *containerProvide) gin() *gin.Engine {
-	return utilsDriver.NewGin()
-}
-
 func (cp *containerProvide) gormM() (*gorm.DB, error) {
 	return utilsDriver.NewPostgresM(configs.Gorm.GetHost(), configs.Gorm.GetUser(), configs.Gorm.GetPassword(),
 		configs.Gorm.GetDBName(), configs.Gorm.GetPort(),
@@ -211,4 +202,25 @@ func (cp *containerProvide) mongoRS() (*mongo.Client, error) {
 		utilsDriver.WithMongoPool(configs.Mongo.GetMinPoolSize(), configs.Mongo.GetMaxPoolSize(), configs.Mongo.GetMaxConnIdleTime()),
 		utilsDriver.WithMongoPoolMonitor(),
 	)
+}
+
+func run(ctxStopNotify context.Context, c *cron.Cron, jp *jobPreconditions, container *dig.Container) error {
+	err := container.Invoke(func(in containerIn) {
+		index.StartCreateIndex(in.MongoRS)
+	})
+	if err != nil {
+		return fmt.Errorf("container.Invoke(index.StartCreateIndex) - %w", err)
+	}
+
+	jOrder := jobOrder{}
+	if err := jOrder.addJob(ctxStopNotify, c, jp, container); err != nil {
+		return fmt.Errorf("jOrder.addJob - %w", err)
+	}
+
+	jTransaction := jobTransaction{}
+	if err := jTransaction.addJob(ctxStopNotify, c, jp, container); err != nil {
+		return fmt.Errorf("jTransaction.addJob - %w", err)
+	}
+
+	return nil
 }

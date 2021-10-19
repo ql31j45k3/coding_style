@@ -1,0 +1,49 @@
+FORMAT: 1A
+
+# side project blog 服務
+
+提供建立自己 blog 網站服務。
+
+# Data Structures
+
+## ResponseBasic
++ code: 1 (enum)
+    + 1 - 處理成功
++ messages (array)
+    + `success` (string) - 成功或失敗的描敘訊息
++ data
+
+# Group 範例
+
+### 示範 非同步請求 多個 goroutine [POST /v1/example/multi-goroutine]
+
++ Response 200 (application/json)
+    + Attributes (responseExampleMultiGoroutine)
+
+### 示範 非同步請求 多個 goroutine 執行狀態 [GET /v1/example/multi-goroutine/status?ids={ids_1}&ids={ids_2}]
+
++ parameters
+    + ids_1: `93cc6678-af4d-4550-b1a2-8b10f618a2e8` (string, required) - 任務流水號
+    + ids_2: `88e0f2c6-ad38-4141-a9eb-e86e230a57ae` (string) - 任務流水號
+
++ Response 200 (application/json)
+    + Attributes (responseExampleMultiGoroutineStatus)
+
+# Data Structures
+
+## responseExampleMultiGoroutine (ResponseBasic)
++ data (object)
+    + task_id: `93cc6678-af4d-4550-b1a2-8b10f618a2e8` (string) - 任務流水號
+
+## responseExampleMultiGoroutineStatus (ResponseBasic)
++ data (array)
+    + (object)
+        + task_id: `93cc6678-af4d-4550-b1a2-8b10f618a2e8` (string) - 任務流水號
+        + detail (object)
+            + go_count: `10` (number) - goroutine 數量
+            + finish_count: `10` (number) - goroutine 結束數量
+    + (object)
+        + task_id: `88e0f2c6-ad38-4141-a9eb-e86e230a57ae` (string) - 任務流水號
+        + detail (object)
+            + go_count: `10` (number) - goroutine 數量
+            + finish_count: `3` (number) - goroutine 結束數量

@@ -67,3 +67,11 @@ func (oca *orderControllerApp) get(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, &result)
 }
+
+func StartOrder(ctxStopNotify context.Context) {
+	// cron job 已處理 recover 功能
+
+	order := newUseCaseOrder(newRepositoryOrder())
+
+	order.DoSyncRecordForSchedule(ctxStopNotify, 10)
+}
