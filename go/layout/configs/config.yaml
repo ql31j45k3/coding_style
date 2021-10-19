@@ -27,6 +27,9 @@ api:
 gin:
   mode: debug
 
+gorm:
+  logmode: silent
+
 database:
   postgres:
     master:
