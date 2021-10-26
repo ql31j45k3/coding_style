@@ -110,30 +110,6 @@ func GetNowTimestamp(timezone string) (int64, error) {
 	return GetTimeToTimestamp(nowTime), nil
 }
 
-func GetTodayTimestamp() (int64, int64, error) {
-	nowTimeBasic, err := GetNowTime(TimezoneTaipei)
-	if err != nil {
-		return 0, 0, fmt.Errorf("GetNowTime - %w", err)
-	}
-
-	nowDate := nowTimeBasic.Format(TimeFormatDay) + " 00:00:00"
-
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	nowTime, err := time.ParseInLocation(TimeFormatSecond, nowDate, local)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	startTime, endTime := GetTimeStartAndEnd(nowTime)
-
-	return startTime, endTime, nil
-}
-
 func GetTimeStrToTimestamp(timeStr string, timezone string) (int64, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
@@ -200,6 +176,30 @@ func GetTimestampToStrFormat(timestamp int64, timezone, timeFormat string) (stri
 	timeStr := tempTime.Format(timeFormat)
 
 	return timeStr, nil
+}
+
+func GetTodayTimestamp() (int64, int64, error) {
+	nowTimeBasic, err := GetNowTime(TimezoneTaipei)
+	if err != nil {
+		return 0, 0, fmt.Errorf("GetNowTime - %w", err)
+	}
+
+	nowDate := nowTimeBasic.Format(TimeFormatDay) + " 00:00:00"
+
+	// 時間轉換
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		return 0, 0, fmt.Errorf("time.LoadLocation - %w", err)
+	}
+
+	nowTime, err := time.ParseInLocation(TimeFormatSecond, nowDate, local)
+	if err != nil {
+		return 0, 0, fmt.Errorf("time.ParseInLocation - %w", err)
+	}
+
+	startTime, endTime := GetTimeStartAndEnd(nowTime)
+
+	return startTime, endTime, nil
 }
 
 func GetYesterdayTimestamp(timeStr string) (int64, int64, error) {
