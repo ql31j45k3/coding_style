@@ -9,8 +9,8 @@ func TimestampToMS(timestamp int64) int64 {
 	return timestamp * 1000
 }
 
-// GetTimestampToTime timestamp 帶入到毫秒 13碼
-func GetTimestampToTime(timestamp int64, timezone string) (time.Time, error) {
+// TimestampConvTime timestamp 帶入到毫秒 13碼
+func TimestampConvTime(timestamp int64, timezone string) (time.Time, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)

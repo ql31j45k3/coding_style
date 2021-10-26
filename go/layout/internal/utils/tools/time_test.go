@@ -33,8 +33,8 @@ func TestTimestampToMS(t *testing.T) {
 	}
 }
 
-func TestGetTimestampToTime(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+func TestTimestampConvTime(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -56,15 +56,15 @@ func TestGetTimestampToTime(t *testing.T) {
 				timestamp: 1577808000000,
 				timezone:  TimezoneTaipei,
 			},
-			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTimestampToTime(tt.args.timestamp, tt.args.timezone)
+			got, err := TimestampConvTime(tt.args.timestamp, tt.args.timezone)
 			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetTimestampToTime error = %v", err)
+				assert.NoError(t, err, "TimestampConvTime error = %v", err)
 				return
 			}
 
