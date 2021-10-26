@@ -541,40 +541,158 @@ func TestTimeStrValue_ToStr(t *testing.T) {
 	}
 }
 
-func TestGetTimeToTimeFormatAndTimezone(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+func TestTimeValue_ToTime(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
 	}
 
-	type args struct {
-		baseTime   time.Time
-		timeFormat string
-		timezone   string
+	type fields struct {
+		baseTime time.Time
+		timezone string
+		layout   string
 	}
 	tests := []struct {
 		name    string
-		args    args
+		fields  fields
 		want    time.Time
 		wantErr bool
 	}{
 		{
-			name: "",
-			args: args{
-				baseTime:   time.Date(2020, 1, 1, 0, 0, 0, 100, local),
-				timeFormat: TimeFormatSecond,
-				timezone:   TimezoneTaipei,
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			fields: fields{
+				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatHour,
 			},
-			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+			want:    time.Date(2020, 3, 22, 1, 0, 0, 0, loc),
+			wantErr: false,
+		},
+		{
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatMonth",
+			fields: fields{
+				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatMonth,
+			},
+			want:    time.Date(2020, 3, 1, 0, 0, 0, 0, loc),
+			wantErr: false,
+		},
+		{
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour2",
+			fields: fields{
+				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatHour2,
+			},
+			want:    time.Date(2020, 3, 22, 1, 0, 0, 0, loc),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTimeToTimeFormatAndTimezone(tt.args.baseTime, tt.args.timeFormat, tt.args.timezone)
+			tv := &TimeValue{
+				baseTime: tt.fields.baseTime,
+				timezone: tt.fields.timezone,
+				layout:   tt.fields.layout,
+			}
+			got, err := tv.ToTime()
 			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetTimeToTimeFormatAndTimezone error = %v", err)
+				t.Errorf("ToTime() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			fmt.Println(tt.want, got)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestTimeValue_ToTimestamp(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type fields struct {
+		baseTime time.Time
+		timezone string
+		layout   string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			fields: fields{
+				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatHour,
+			},
+			want:    TimeConvTimestamp(time.Date(2020, 3, 22, 1, 0, 0, 0, loc)),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tv := &TimeValue{
+				baseTime: tt.fields.baseTime,
+				timezone: tt.fields.timezone,
+				layout:   tt.fields.layout,
+			}
+			got, err := tv.ToTimestamp()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToTimestamp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestTimeValue_ToStr(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type fields struct {
+		baseTime time.Time
+		timezone string
+		layout   string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			fields: fields{
+				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatHour,
+			},
+			want:    time.Date(2020, 3, 22, 1, 0, 0, 0, loc).Format(TimeFormatHour),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tv := &TimeValue{
+				baseTime: tt.fields.baseTime,
+				timezone: tt.fields.timezone,
+				layout:   tt.fields.layout,
+			}
+			got, err := tv.ToStr()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToStr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.Equal(t, tt.want, got)
