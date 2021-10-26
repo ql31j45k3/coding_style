@@ -872,7 +872,9 @@ func TestGetTodayTimestamp(t *testing.T) {
 
 func TestGetYesterdayTimestamp(t *testing.T) {
 	type args struct {
-		timeStr string
+		timeStr  string
+		timezone string
+		layout   string
 	}
 	tests := []struct {
 		name    string
@@ -884,7 +886,9 @@ func TestGetYesterdayTimestamp(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				timeStr: "2020-03-22 00:00:00",
+				timeStr:  "2020-03-22 00:00:00",
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatSecond,
 			},
 			want:    1584720000000,
 			want1:   1584806400000,
@@ -893,7 +897,7 @@ func TestGetYesterdayTimestamp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetYesterdayTimestamp(tt.args.timeStr)
+			got, got1, err := GetYesterdayTimestamp(tt.args.timeStr, tt.args.timezone, tt.args.layout)
 			if (err != nil) != tt.wantErr {
 				assert.NoError(t, err, "GetYesterdayTimestamp error = %v", err)
 				return

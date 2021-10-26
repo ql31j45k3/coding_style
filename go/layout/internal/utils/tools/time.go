@@ -259,22 +259,28 @@ func GetTodayTimestamp(nowTimeBasic time.Time, timezone, layout string) (int64, 
 	return startTime, endTime, nil
 }
 
-func GetYesterdayTimestamp(timeStr string) (int64, int64, error) {
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.LoadLocation - %w", err)
+func GetYesterdayTimestampDefault(timeStr string) (int64, int64, error) {
+	return GetYesterdayTimestamp(timeStr, "", "")
+}
+
+func GetYesterdayTimestamp(timeStr, timezone, layout string) (int64, int64, error) {
+	if IsEmpty(timezone) {
+		timezone = TimezoneTaipei
 	}
 
-	timeEnd, err := time.ParseInLocation(TimeFormatSecond, timeStr, local)
+	if IsEmpty(layout) {
+		layout = TimeFormatSecond
+	}
+
+	timeEnd, err := ParseInLocation(timeStr, timezone, layout)
 	if err != nil {
-		return 0, 0, fmt.Errorf("time.ParseInLocation - %w", err)
+		return 0, 0, fmt.Errorf("ParseInLocation - %w", err)
 	}
 
 	// 1天前
 	timeStart := timeEnd.AddDate(0, 0, -1)
-	startTime := timeStart.UnixNano() / 1e6
-	endTime := timeEnd.UnixNano() / 1e6
+	startTime := TimeConvTimestamp(timeStart)
+	endTime := TimeConvTimestamp(timeEnd)
 
 	return startTime, endTime, nil
 }
