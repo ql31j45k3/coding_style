@@ -145,6 +145,41 @@ func TestParseInLocation(t *testing.T) {
 	}
 }
 
+func TestGetTimeStartAndEnd(t *testing.T) {
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		nowTime time.Time
+	}
+	var tests = []struct {
+		name  string
+		args  args
+		want  int64
+		want1 int64
+	}{
+		{
+			name: "nowTime= 2021-09-30 09:30:00",
+			args: args{
+				nowTime: time.Date(2021, 9, 30, 9, 30, 0, 0, local),
+			},
+			want:  1632965400000,
+			want1: 1633051800000,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := GetTimeStartAndEnd(tt.args.nowTime)
+
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
+		})
+	}
+}
+
 func TestGetNowTimeStrAndFormat(t *testing.T) {
 	nowTime, err := GetNowTime(TimezoneTaipei)
 	if err != nil {
@@ -265,41 +300,6 @@ func TestGetNowTimestamp(t *testing.T) {
 			gotStr := strconv.Itoa(int(got))
 
 			assert.Equal(t, wantStr[0:10], gotStr[0:10])
-		})
-	}
-}
-
-func TestGetTimeStartAndEnd(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	type args struct {
-		nowTime time.Time
-	}
-	var tests = []struct {
-		name  string
-		args  args
-		want  int64
-		want1 int64
-	}{
-		{
-			name: "nowTime= 2021-09-30 09:30:00",
-			args: args{
-				nowTime: time.Date(2021, 9, 30, 9, 30, 0, 0, local),
-			},
-			want:  1632965400000,
-			want1: 1633051800000,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetTimeStartAndEnd(tt.args.nowTime)
-
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }

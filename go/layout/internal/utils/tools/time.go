@@ -37,6 +37,13 @@ func ParseInLocation(timeStr, timezone, timeFormat string) (time.Time, error) {
 	return result, nil
 }
 
+func GetTimeStartAndEnd(nowTime time.Time) (int64, int64) {
+	startTime := nowTime.UnixNano() / 1e6
+	endTime := nowTime.AddDate(0, 0, 1).UnixNano() / 1e6
+
+	return startTime, endTime
+}
+
 func GetNowTime(timezone string) (time.Time, error) {
 	t := time.Now()
 	loadLocation, err := time.LoadLocation(timezone)
@@ -106,13 +113,6 @@ func GetTodayTimestamp() (int64, int64, error) {
 	startTime, endTime := GetTimeStartAndEnd(nowTime)
 
 	return startTime, endTime, nil
-}
-
-func GetTimeStartAndEnd(nowTime time.Time) (int64, int64) {
-	startTime := nowTime.UnixNano() / 1e6
-	endTime := nowTime.AddDate(0, 0, 1).UnixNano() / 1e6
-
-	return startTime, endTime
 }
 
 func GetYesterdayTimestamp(timeStr string) (int64, int64, error) {
