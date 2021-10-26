@@ -826,6 +826,50 @@ func TestTimestampValue_ToStr(t *testing.T) {
 	}
 }
 
+func TestGetTodayTimestamp(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		nowTimeBasic time.Time
+		timezone     string
+		layout       string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		want1   int64
+		wantErr bool
+	}{
+		{
+			name: "today = 2020-01-01 01:01:01",
+			args: args{
+				nowTimeBasic: time.Date(2020, 1, 1, 1, 1, 1, 1, loc),
+				timezone:     TimezoneTaipei,
+				layout:       TimeFormatSecond,
+			},
+			want:    1577808000000,
+			want1:   1577894400000,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := GetTodayTimestamp(tt.args.nowTimeBasic, tt.args.timezone, tt.args.layout)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTodayTimestamp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
+		})
+	}
+}
+
 func TestGetYesterdayTimestamp(t *testing.T) {
 	type args struct {
 		timeStr string

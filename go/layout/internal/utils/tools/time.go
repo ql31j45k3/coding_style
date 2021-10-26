@@ -224,23 +224,34 @@ func (tv *TimestampValue) ToStr() (string, error) {
 	return timeStr, nil
 }
 
-func GetTodayTimestamp() (int64, int64, error) {
-	nowTimeBasic, err := GetNowTime(TimezoneTaipei)
+func GetTodayTimestampDefault() (int64, int64, error) {
+	t := NowTime{
+		timezone: TimezoneTaipei,
+		layout:   TimeFormatSecond,
+	}
+
+	nowTimeBasic, err := t.ToTime()
 	if err != nil {
-		return 0, 0, fmt.Errorf("GetNowTime - %w", err)
+		return 0, 0, fmt.Errorf("t.ToTime() - %w", err)
+	}
+
+	return GetTodayTimestamp(nowTimeBasic, "", "")
+}
+
+func GetTodayTimestamp(nowTimeBasic time.Time, timezone, layout string) (int64, int64, error) {
+	if IsEmpty(timezone) {
+		timezone = TimezoneTaipei
+	}
+
+	if IsEmpty(layout) {
+		layout = TimeFormatSecond
 	}
 
 	nowDate := nowTimeBasic.Format(TimeFormatDay) + " 00:00:00"
 
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
+	nowTime, err := ParseInLocation(nowDate, timezone, layout)
 	if err != nil {
-		return 0, 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	nowTime, err := time.ParseInLocation(TimeFormatSecond, nowDate, local)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.ParseInLocation - %w", err)
+		return 0, 0, fmt.Errorf("ParseInLocation - %w", err)
 	}
 
 	startTime, endTime := GetTimeStartAndEnd(nowTime)
