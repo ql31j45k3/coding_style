@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+func TimestampToMS(timestamp int64) int64 {
+	return timestamp * 1000
+}
+
 func GetNowTime(timezone string) (time.Time, error) {
 	t := time.Now()
 	loadLocation, err := time.LoadLocation(timezone)
@@ -121,10 +125,6 @@ func GetMonthStartTimeAndEndTime(timeStr, layout string, years, months int) (tim
 	endTime := startTime.AddDate(0, 1, -1)
 
 	return startTime, endTime, nil
-}
-
-func TimestampToMS(timestamp int64) int64 {
-	return timestamp * 1000
 }
 
 // GetTimestampToTime timestamp 帶入到毫秒 13碼

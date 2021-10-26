@@ -8,6 +8,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestTimestampToMS(t *testing.T) {
+	type args struct {
+		timestamp int64
+	}
+	tests := []struct {
+		name string
+		args args
+		want int64
+	}{
+		{
+			name: "",
+			args: args{
+				timestamp: 1584806400,
+			},
+			want: 1584806400000,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := TimestampToMS(tt.args.timestamp)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestGetNowTimeStrAndFormat(t *testing.T) {
 	nowTime, err := GetNowTime(TimezoneTaipei)
 	if err != nil {
@@ -244,31 +269,6 @@ func TestGetMonthStartTimeAndEndTime(t *testing.T) {
 
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.want1, got1)
-		})
-	}
-}
-
-func TestTimestampToMS(t *testing.T) {
-	type args struct {
-		timestamp int64
-	}
-	tests := []struct {
-		name string
-		args args
-		want int64
-	}{
-		{
-			name: "",
-			args: args{
-				timestamp: 1584806400,
-			},
-			want: 1584806400000,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := TimestampToMS(tt.args.timestamp)
-			assert.Equal(t, tt.want, got)
 		})
 	}
 }
