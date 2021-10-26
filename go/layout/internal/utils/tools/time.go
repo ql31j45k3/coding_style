@@ -23,6 +23,20 @@ func GetTimeToTimestamp(t time.Time) int64 {
 	return t.UnixNano() / 1e6
 }
 
+func ParseInLocation(timeStr, timezone, timeFormat string) (time.Time, error) {
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
+	}
+
+	result, err := time.ParseInLocation(timeFormat, timeStr, loc)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
+	}
+
+	return result, nil
+}
+
 func GetNowTime(timezone string) (time.Time, error) {
 	t := time.Now()
 	loadLocation, err := time.LoadLocation(timezone)
@@ -207,20 +221,6 @@ func GetTimestampToStrFormat(timestamp int64, timezone, timeFormat string) (stri
 	timeStr := tempTime.Format(timeFormat)
 
 	return timeStr, nil
-}
-
-func ParseInLocation(timeStr, timezone, timeFormat string) (time.Time, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	result, err := time.ParseInLocation(timeFormat, timeStr, loc)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return result, nil
 }
 
 func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, timeFormat string) (time.Time, time.Time, error) {

@@ -104,6 +104,47 @@ func TestGetTimeToTimestamp(t *testing.T) {
 	}
 }
 
+func TestParseInLocation(t *testing.T) {
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		timeStr    string
+		timezone   string
+		timeFormat string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    time.Time
+		wantErr bool
+	}{
+		{
+			name: "",
+			args: args{
+				timeStr:    "2020-03-22 00:00:00",
+				timezone:   TimezoneTaipei,
+				timeFormat: TimeFormatSecond,
+			},
+			want:    time.Date(2020, 3, 22, 0, 0, 0, 0, local),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseInLocation(tt.args.timeStr, tt.args.timezone, tt.args.timeFormat)
+			if (err != nil) != tt.wantErr {
+				assert.NoError(t, err, "ParseInLocation error = %v", err)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestGetNowTimeStrAndFormat(t *testing.T) {
 	nowTime, err := GetNowTime(TimezoneTaipei)
 	if err != nil {
@@ -527,47 +568,6 @@ func TestGetTimestampToStrFormat(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestParseInLocation(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	type args struct {
-		timeStr    string
-		timezone   string
-		timeFormat string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    time.Time
-		wantErr bool
-	}{
-		{
-			name: "",
-			args: args{
-				timeStr:    "2020-03-22 00:00:00",
-				timezone:   TimezoneTaipei,
-				timeFormat: TimeFormatSecond,
-			},
-			want:    time.Date(2020, 3, 22, 0, 0, 0, 0, local),
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseInLocation(tt.args.timeStr, tt.args.timezone, tt.args.timeFormat)
-			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "ParseInLocation error = %v", err)
-				return
-			}
 			assert.Equal(t, tt.want, got)
 		})
 	}
