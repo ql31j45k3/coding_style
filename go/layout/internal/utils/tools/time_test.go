@@ -958,7 +958,7 @@ func TestGetMonthStartTimeAndEndTime(t *testing.T) {
 }
 
 func TestGetTimeSubDay(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -976,72 +976,72 @@ func TestGetTimeSubDay(t *testing.T) {
 		{
 			name: "one second but different day should return 1",
 			args: args{
-				t1: time.Date(2007, 1, 2, 23, 59, 59, 0, local),
-				t2: time.Date(2007, 1, 3, 0, 0, 0, 0, local),
+				t1: time.Date(2007, 1, 2, 23, 59, 59, 0, loc),
+				t2: time.Date(2007, 1, 3, 0, 0, 0, 0, loc),
 			},
 			want: 1,
 		},
 		{
 			name: "just one day should return 1, 2007",
 			args: args{
-				t1: time.Date(2007, 1, 2, 23, 59, 59, 0, local),
-				t2: time.Date(2007, 1, 3, 23, 59, 59, 0, local),
+				t1: time.Date(2007, 1, 2, 23, 59, 59, 0, loc),
+				t2: time.Date(2007, 1, 3, 23, 59, 59, 0, loc),
 			},
 			want: 1,
 		},
 		{
 			name: "just one day should return 1, 2017",
 			args: args{
-				t1: time.Date(2017, 9, 1, 10, 0, 0, 0, local),
-				t2: time.Date(2017, 9, 2, 11, 0, 0, 0, local),
+				t1: time.Date(2017, 9, 1, 10, 0, 0, 0, loc),
+				t2: time.Date(2017, 9, 2, 11, 0, 0, 0, loc),
 			},
 			want: 1,
 		},
 		{
 			name: "just one day should return 2",
 			args: args{
-				t1: time.Date(2007, 1, 2, 23, 59, 59, 0, local),
-				t2: time.Date(2007, 1, 4, 0, 0, 0, 0, local),
+				t1: time.Date(2007, 1, 2, 23, 59, 59, 0, loc),
+				t2: time.Date(2007, 1, 4, 0, 0, 0, 0, loc),
 			},
 			want: 2,
 		},
 		{
 			name: "just one day should return 3",
 			args: args{
-				t1: time.Date(2007, 1, 2, 0, 0, 0, 0, local),
-				t2: time.Date(2007, 1, 5, 0, 0, 0, 0, local),
+				t1: time.Date(2007, 1, 2, 0, 0, 0, 0, loc),
+				t2: time.Date(2007, 1, 5, 0, 0, 0, 0, loc),
 			},
 			want: 3,
 		},
 		{
 			name: "just one month:31 days should return 31",
 			args: args{
-				t1: time.Date(2007, 1, 2, 0, 0, 0, 0, local),
-				t2: time.Date(2007, 2, 2, 0, 0, 0, 0, local),
+				t1: time.Date(2007, 1, 2, 0, 0, 0, 0, loc),
+				t2: time.Date(2007, 2, 2, 0, 0, 0, 0, loc),
 			},
 			want: 31,
 		},
 		{
 			name: "just one month:29 days should return 29",
 			args: args{
-				t1: time.Date(2000, 2, 1, 0, 0, 0, 0, local),
-				t2: time.Date(2000, 3, 1, 0, 0, 0, 0, local),
+				t1: time.Date(2000, 2, 1, 0, 0, 0, 0, loc),
+				t2: time.Date(2000, 3, 1, 0, 0, 0, 0, loc),
 			},
 			want: 29,
 		},
 		{
-			name: "just one day: should return 1, Local",
+			name: "just one day: should return 1, loc",
 			args: args{
-				t1: time.Date(2018, 1, 9, 23, 59, 22, 100, time.Local),
-				t2: time.Date(2018, 1, 10, 0, 0, 1, 100, time.Local),
+				t1: time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
+				t2: time.Date(2018, 1, 10, 0, 0, 1, 100, loc),
 			},
 			want: 1,
 		},
 		{
 			name: "just one day: should return 1, UTC",
 			args: args{
-				t1: time.Date(2018, 1, 9, 23, 59, 22, 100, local),
-				t2: time.Date(2018, 1, 10, 0, 0, 1, 100, local),
+				t1: time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
+				t2: time.Date(2018, 1, 10, 0, 0, 1, 100, loc),
 			},
 			want: 1,
 		},
@@ -1055,7 +1055,7 @@ func TestGetTimeSubDay(t *testing.T) {
 }
 
 func TestIsTimeGte(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -1073,24 +1073,24 @@ func TestIsTimeGte(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				startTime: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-				t1:        time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+				startTime: time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
+				t1:        time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
 			},
 			want: true,
 		},
 		{
 			name: "",
 			args: args{
-				startTime: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-				t1:        time.Date(2020, 1, 1, 0, 0, 1, 0, local),
+				startTime: time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
+				t1:        time.Date(2020, 1, 1, 0, 0, 1, 0, loc),
 			},
 			want: true,
 		},
 		{
 			name: "",
 			args: args{
-				startTime: time.Date(2020, 1, 2, 0, 0, 0, 0, local),
-				t1:        time.Date(2020, 1, 1, 23, 59, 59, 0, local),
+				startTime: time.Date(2020, 1, 2, 0, 0, 0, 0, loc),
+				t1:        time.Date(2020, 1, 1, 23, 59, 59, 0, loc),
 			},
 			want: false,
 		},
@@ -1104,7 +1104,7 @@ func TestIsTimeGte(t *testing.T) {
 }
 
 func TestIsTimeLte(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -1122,24 +1122,24 @@ func TestIsTimeLte(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				t1: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-				t2: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+				t1: time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
+				t2: time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
 			},
 			want: true,
 		},
 		{
 			name: "",
 			args: args{
-				t1: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-				t2: time.Date(2020, 1, 1, 0, 0, 1, 0, local),
+				t1: time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
+				t2: time.Date(2020, 1, 1, 0, 0, 1, 0, loc),
 			},
 			want: false,
 		},
 		{
 			name: "",
 			args: args{
-				t1: time.Date(2020, 1, 2, 0, 0, 0, 0, local),
-				t2: time.Date(2020, 1, 1, 23, 59, 59, 0, local),
+				t1: time.Date(2020, 1, 2, 0, 0, 0, 0, loc),
+				t2: time.Date(2020, 1, 1, 23, 59, 59, 0, loc),
 			},
 			want: true,
 		},
@@ -1154,7 +1154,7 @@ func TestIsTimeLte(t *testing.T) {
 }
 
 func TestBetweenGteAndLt(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -1173,36 +1173,36 @@ func TestBetweenGteAndLt(t *testing.T) {
 		{
 			name: "2018/1/9 00:00:00 ~ 2018/1/9 23:59:22, 2018/1/9 23:59:22",
 			args: args{
-				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, local),
-				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, local),
-				t1:        time.Date(2018, 1, 9, 23, 59, 22, 100, local),
+				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, loc),
+				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
+				t1:        time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
 			},
 			want: false,
 		},
 		{
 			name: "2018/1/9 00:00:00 ~ 2018/1/9 23:59:22, 2018/1/9 23:59:21",
 			args: args{
-				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, local),
-				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, local),
-				t1:        time.Date(2018, 1, 9, 23, 59, 21, 100, local),
+				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, loc),
+				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
+				t1:        time.Date(2018, 1, 9, 23, 59, 21, 100, loc),
 			},
 			want: true,
 		},
 		{
 			name: "2018/1/9 00:00:00 ~ 2018/1/9 23:59:22, 018/1/9 00:00:00",
 			args: args{
-				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, local),
-				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, local),
-				t1:        time.Date(2018, 1, 9, 0, 0, 0, 100, local),
+				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, loc),
+				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
+				t1:        time.Date(2018, 1, 9, 0, 0, 0, 100, loc),
 			},
 			want: true,
 		},
 		{
 			name: "2018/1/9 00:00:00 ~ 2018/1/9 23:59:22, 2018/1/8 23:59:22",
 			args: args{
-				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, local),
-				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, local),
-				t1:        time.Date(2018, 1, 8, 23, 59, 22, 100, local),
+				startTime: time.Date(2018, 1, 9, 0, 0, 0, 100, loc),
+				endTime:   time.Date(2018, 1, 9, 23, 59, 22, 100, loc),
+				t1:        time.Date(2018, 1, 8, 23, 59, 22, 100, loc),
 			},
 			want: false,
 		},
