@@ -73,6 +73,37 @@ func TestGetTimestampToTime(t *testing.T) {
 	}
 }
 
+func TestGetTimeToTimestamp(t *testing.T) {
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		t time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want int64
+	}{
+		{
+			name: "",
+			args: args{
+				t: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+			},
+			want: 1577808000000,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetTimeToTimestamp(tt.args.t)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestGetNowTimeStrAndFormat(t *testing.T) {
 	nowTime, err := GetNowTime(TimezoneTaipei)
 	if err != nil {
@@ -309,37 +340,6 @@ func TestGetMonthStartTimeAndEndTime(t *testing.T) {
 
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.want1, got1)
-		})
-	}
-}
-
-func TestGetTimeToTimestamp(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	type args struct {
-		t time.Time
-	}
-	tests := []struct {
-		name string
-		args args
-		want int64
-	}{
-		{
-			name: "",
-			args: args{
-				t: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-			},
-			want: 1577808000000,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetTimeToTimestamp(tt.args.t)
-			assert.Equal(t, tt.want, got)
 		})
 	}
 }

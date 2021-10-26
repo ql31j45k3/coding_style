@@ -19,6 +19,10 @@ func GetTimestampToTime(timestamp int64, timezone string) (time.Time, error) {
 	return time.Unix(timestamp/1000, 0).In(loc), nil
 }
 
+func GetTimeToTimestamp(t time.Time) int64 {
+	return t.UnixNano() / 1e6
+}
+
 func GetNowTime(timezone string) (time.Time, error) {
 	t := time.Now()
 	loadLocation, err := time.LoadLocation(timezone)
@@ -135,10 +139,6 @@ func GetMonthStartTimeAndEndTime(timeStr, layout string, years, months int) (tim
 	endTime := startTime.AddDate(0, 1, -1)
 
 	return startTime, endTime, nil
-}
-
-func GetTimeToTimestamp(t time.Time) int64 {
-	return t.UnixNano() / 1e6
 }
 
 func GetTimeStrToTimestamp(timeStr string, timezone string) (int64, error) {
