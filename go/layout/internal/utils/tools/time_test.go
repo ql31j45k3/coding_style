@@ -180,6 +180,53 @@ func TestGetTimeStartAndEnd(t *testing.T) {
 	}
 }
 
+func TestGetStartTimeAndEndTime(t *testing.T) {
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		startTimeStr string
+		endTimeStr   string
+		timezone     string
+		timeFormat   string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    time.Time
+		want1   time.Time
+		wantErr bool
+	}{
+		{
+			name: "startTimeStr= 2021-09-30 09:30:00, endTimeStr= 2021-09-30 18:30:00, timezone= TimezoneTaipei, timeFormat= TimeFormatSecond",
+			args: args{
+				startTimeStr: "2021-09-30 09:30:00",
+				endTimeStr:   "2021-09-30 18:30:00",
+				timezone:     TimezoneTaipei,
+				timeFormat:   TimeFormatSecond,
+			},
+			want:    time.Date(2021, 9, 30, 9, 30, 0, 0, local),
+			want1:   time.Date(2021, 9, 30, 18, 30, 0, 0, local),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := GetStartTimeAndEndTime(tt.args.startTimeStr, tt.args.endTimeStr, tt.args.timezone, tt.args.timeFormat)
+			if (err != nil) != tt.wantErr {
+				assert.NoError(t, err, "GetStartTimeAndEndTime() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
+		})
+	}
+}
+
 func TestGetNowTimeStrAndFormat(t *testing.T) {
 	nowTime, err := GetNowTime(TimezoneTaipei)
 	if err != nil {
@@ -569,53 +616,6 @@ func TestGetTimestampToStrFormat(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestGetStartTimeAndEndTime(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	type args struct {
-		startTimeStr string
-		endTimeStr   string
-		timezone     string
-		timeFormat   string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    time.Time
-		want1   time.Time
-		wantErr bool
-	}{
-		{
-			name: "startTimeStr= 2021-09-30 09:30:00, endTimeStr= 2021-09-30 18:30:00, timezone= TimezoneTaipei, timeFormat= TimeFormatSecond",
-			args: args{
-				startTimeStr: "2021-09-30 09:30:00",
-				endTimeStr:   "2021-09-30 18:30:00",
-				timezone:     TimezoneTaipei,
-				timeFormat:   TimeFormatSecond,
-			},
-			want:    time.Date(2021, 9, 30, 9, 30, 0, 0, local),
-			want1:   time.Date(2021, 9, 30, 18, 30, 0, 0, local),
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetStartTimeAndEndTime(tt.args.startTimeStr, tt.args.endTimeStr, tt.args.timezone, tt.args.timeFormat)
-			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetStartTimeAndEndTime() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
