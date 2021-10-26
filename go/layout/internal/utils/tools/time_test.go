@@ -33,6 +33,46 @@ func TestTimestampToMS(t *testing.T) {
 	}
 }
 
+func TestGetTimestampToTime(t *testing.T) {
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		timestamp int64
+		timezone  string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    time.Time
+		wantErr bool
+	}{
+		{
+			name: "",
+			args: args{
+				timestamp: 1577808000000,
+				timezone:  TimezoneTaipei,
+			},
+			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetTimestampToTime(tt.args.timestamp, tt.args.timezone)
+			if (err != nil) != tt.wantErr {
+				assert.NoError(t, err, "GetTimestampToTime error = %v", err)
+				return
+			}
+
+			assert.Equal(t, tt.want.String(), got.String())
+		})
+	}
+}
+
 func TestGetNowTimeStrAndFormat(t *testing.T) {
 	nowTime, err := GetNowTime(TimezoneTaipei)
 	if err != nil {
@@ -269,46 +309,6 @@ func TestGetMonthStartTimeAndEndTime(t *testing.T) {
 
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.want1, got1)
-		})
-	}
-}
-
-func TestGetTimestampToTime(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	type args struct {
-		timestamp int64
-		timezone  string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    time.Time
-		wantErr bool
-	}{
-		{
-			name: "",
-			args: args{
-				timestamp: 1577808000000,
-				timezone:  TimezoneTaipei,
-			},
-			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTimestampToTime(tt.args.timestamp, tt.args.timezone)
-			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetTimestampToTime error = %v", err)
-				return
-			}
-
-			assert.Equal(t, tt.want.String(), got.String())
 		})
 	}
 }
