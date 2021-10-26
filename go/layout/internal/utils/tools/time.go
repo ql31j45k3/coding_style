@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -65,37 +66,28 @@ func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, layout string) (
 	return startTime, endTime, nil
 }
 
-func GetNowTime(timezone string) (time.Time, error) {
+type NowTime struct {
+	timezone string
+	layout   string
+}
+
+func (nt *NowTime) ToTime() (time.Time, error) {
+	if IsEmpty(nt.timezone) {
+		return time.Time{}, errors.New("timezone is not empty")
+	}
+
+	if IsEmpty(nt.layout) {
+		return time.Time{}, errors.New("layout is not empty")
+	}
+
 	t := time.Now()
-	loadLocation, err := time.LoadLocation(timezone)
+	loadLocation, err := time.LoadLocation(nt.timezone)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
 	}
+	t = t.In(loadLocation)
 
-	return t.In(loadLocation), nil
-}
-
-func GetNowTimeStrAndFormat(timezone, layout string) (string, error) {
-	nowTime, err := GetNowTime(timezone)
-	if err != nil {
-		return "", fmt.Errorf("GetNowTime - %w", err)
-	}
-
-	return nowTime.Format(layout), nil
-}
-
-func GetNowTimeAndFormat(timezone, layout string) (time.Time, error) {
-	now, err := GetNowTime(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("GetNowTime - %w", err)
-	}
-
-	loadLocation, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	nowTime, err := time.ParseInLocation(layout, now.Format(layout), loadLocation)
+	nowTime, err := time.ParseInLocation(nt.layout, t.Format(nt.layout), loadLocation)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
 	}
@@ -103,13 +95,22 @@ func GetNowTimeAndFormat(timezone, layout string) (time.Time, error) {
 	return nowTime, nil
 }
 
-func GetNowTimestamp(timezone string) (int64, error) {
-	nowTime, err := GetNowTime(timezone)
+func (nt *NowTime) ToTimestamp() (int64, error) {
+	nowTime, err := nt.ToTime()
 	if err != nil {
-		return 0, fmt.Errorf("time.GetNowTimestamp - %w", err)
+		return 0, fmt.Errorf("nt.ToTime - %w", err)
 	}
 
-	return GetTimeToTimestamp(nowTime), nil
+	return TimeConvTimestamp(nowTime), nil
+}
+
+func (nt *NowTime) ToStr() (string, error) {
+	nowTime, err := nt.ToTime()
+	if err != nil {
+		return "", fmt.Errorf("nt.ToTime - %w", err)
+	}
+
+	return nowTime.Format(nt.layout), nil
 }
 
 func GetTimeStrToTimestamp(timeStr string, timezone string) (int64, error) {

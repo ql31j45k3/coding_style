@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 	"time"
 
@@ -227,68 +227,53 @@ func TestGetStartTimeAndEndTime(t *testing.T) {
 	}
 }
 
-func TestGetNowTimeStrAndFormat(t *testing.T) {
-	nowTime, err := GetNowTime(TimezoneTaipei)
+func getNowTime(timezone, layout string) (time.Time, error) {
+	t := time.Now()
+	loadLocation, err := time.LoadLocation(timezone)
 	if err != nil {
-		t.Error(err)
-		return
+		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
+	}
+	t = t.In(loadLocation)
+
+	nowTime, err := time.ParseInLocation(layout, t.Format(layout), loadLocation)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
 	}
 
-	nowTimeStr := nowTime.Format(TimeFormatSecond)[:13] + ":00:00"
-
-	type args struct {
-		timezone string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "",
-			args: args{
-				TimezoneTaipei,
-			},
-			want:    nowTimeStr,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetNowTimeStrAndFormat(tt.args.timezone, TimeFormatHour)
-			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetNowTimeStrAndFormat() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			assert.Equal(t, tt.want, got)
-		})
-	}
+	return nowTime, nil
 }
 
-func TestGetNowTimeAndFormat(t *testing.T) {
-	nowTime, err := GetNowTimeAndFormat(TimezoneTaipei, TimeFormatSecond)
+func TestNowTime_ToTime(t *testing.T) {
+	nowTime, err := getNowTime(TimezoneTaipei, TimeFormatSecond)
 	if err != nil {
-		t.Error(err)
+		t.Log(err)
 		return
 	}
 
-	type args struct {
+	type fields struct {
 		timezone string
 		layout   string
 	}
 	tests := []struct {
 		name    string
-		args    args
+		fields  fields
 		want    time.Time
 		wantErr bool
 	}{
 		{
-			name: "",
-			args: args{
+			name: "nowTime layout= TimeFormatSecond",
+			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatSecond,
+			},
+			want:    nowTime,
+			wantErr: false,
+		},
+		{
+			name: "nowTime layout= TimeFormatDay",
+			fields: fields{
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatDay,
 			},
 			want:    nowTime,
 			wantErr: false,
@@ -296,57 +281,126 @@ func TestGetNowTimeAndFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetNowTimeAndFormat(tt.args.timezone, tt.args.layout)
+			nt := &NowTime{
+				timezone: tt.fields.timezone,
+				layout:   tt.fields.layout,
+			}
+			got, err := nt.ToTime()
 			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetNowTimeAndFormat() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ToTime() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want.Format(tt.fields.layout), got.Format(tt.fields.layout))
 		})
 	}
 }
 
-func TestGetNowTimestamp(t *testing.T) {
-	nowTime, err := GetNowTime(TimezoneTaipei)
+func TestNowTime_ToTimestamp(t *testing.T) {
+	nowTime, err := getNowTime(TimezoneTaipei, TimeFormatSecond)
 	if err != nil {
-		t.Error(err)
+		t.Log(err)
 		return
 	}
 
-	nowTimestamp := GetTimeToTimestamp(nowTime)
+	nowTime2, err := getNowTime(TimezoneTaipei, TimeFormatDay)
+	if err != nil {
+		t.Log(err)
+		return
+	}
 
-	type args struct {
+	type fields struct {
 		timezone string
+		layout   string
 	}
 	tests := []struct {
 		name    string
-		args    args
+		fields  fields
 		want    int64
 		wantErr bool
 	}{
 		{
-			name: "",
-			args: args{
+			name: "nowTime layout= TimeFormatSecond",
+			fields: fields{
 				timezone: TimezoneTaipei,
+				layout:   TimeFormatSecond,
 			},
-			want:    nowTimestamp,
+			want:    TimeConvTimestamp(nowTime),
+			wantErr: false,
+		},
+		{
+			name: "nowTime layout= TimeFormatDay",
+			fields: fields{
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatDay,
+			},
+			want:    TimeConvTimestamp(nowTime2),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetNowTimestamp(tt.args.timezone)
+			nt := &NowTime{
+				timezone: tt.fields.timezone,
+				layout:   tt.fields.layout,
+			}
+			got, err := nt.ToTimestamp()
 			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetNowTimestamp() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ToTimestamp() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
 
-			// 注意: 只比較前 10碼 到秒數比較即可
-			wantStr := strconv.Itoa(int(tt.want))
-			gotStr := strconv.Itoa(int(got))
+func TestNowTime_ToStr(t *testing.T) {
+	nowTime, err := getNowTime(TimezoneTaipei, TimeFormatSecond)
+	if err != nil {
+		t.Log(err)
+		return
+	}
 
-			assert.Equal(t, wantStr[0:10], gotStr[0:10])
+	type fields struct {
+		timezone string
+		layout   string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "nowTime layout= TimeFormatSecond",
+			fields: fields{
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatSecond,
+			},
+			want:    nowTime.Format(TimeFormatSecond),
+			wantErr: false,
+		},
+		{
+			name: "nowTime layout= TimeFormatDay",
+			fields: fields{
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatDay,
+			},
+			want:    nowTime.Format(TimeFormatDay),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nt := &NowTime{
+				timezone: tt.fields.timezone,
+				layout:   tt.fields.layout,
+			}
+			got, err := nt.ToStr()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToStr() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
