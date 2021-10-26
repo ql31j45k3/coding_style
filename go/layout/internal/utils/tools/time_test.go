@@ -909,17 +909,18 @@ func TestGetYesterdayTimestamp(t *testing.T) {
 }
 
 func TestGetMonthStartTimeAndEndTime(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
 	}
 
 	type args struct {
-		timeStr string
-		layout  string
-		years   int
-		months  int
+		timeStr  string
+		timezone string
+		layout   string
+		years    int
+		months   int
 	}
 	tests := []struct {
 		name    string
@@ -931,19 +932,20 @@ func TestGetMonthStartTimeAndEndTime(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				timeStr: "2020-03-22 00:00:00",
-				layout:  TimeFormatSecond,
-				years:   0,
-				months:  -2,
+				timeStr:  "2020-03-22 00:00:00",
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatSecond,
+				years:    0,
+				months:   -2,
 			},
-			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-			want1:   time.Date(2020, 1, 31, 0, 0, 0, 0, local),
+			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
+			want1:   time.Date(2020, 1, 31, 0, 0, 0, 0, loc),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetMonthStartTimeAndEndTime(tt.args.timeStr, tt.args.layout, tt.args.years, tt.args.months)
+			got, got1, err := GetMonthStartTimeAndEndTime(tt.args.timeStr, tt.args.timezone, tt.args.layout, tt.args.years, tt.args.months)
 			if (err != nil) != tt.wantErr {
 				assert.NoError(t, err, "GetMonthStartTimeAndEndTime error = %v", err)
 				return

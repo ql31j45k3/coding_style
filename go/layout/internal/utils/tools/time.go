@@ -285,21 +285,28 @@ func GetYesterdayTimestamp(timeStr, timezone, layout string) (int64, int64, erro
 	return startTime, endTime, nil
 }
 
-func GetMonthStartTimeAndEndTime(timeStr, layout string, years, months int) (time.Time, time.Time, error) {
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
+func GetMonthStartTimeAndEndTime(timeStr, timezone, layout string, years, months int) (time.Time, time.Time, error) {
+	if IsEmpty(timezone) {
+		timezone = TimezoneTaipei
+	}
+
+	if IsEmpty(layout) {
+		layout = TimeFormatSecond
+	}
+
+	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
 	}
 
-	basicTime, err := time.ParseInLocation(layout, timeStr, local)
+	basicTime, err := time.ParseInLocation(layout, timeStr, loc)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
 	}
 
 	year, month, _ := basicTime.AddDate(years, months, 0).Date()
 
-	startTime := time.Date(year, month, 1, 0, 0, 0, 0, local)
+	startTime := time.Date(year, month, 1, 0, 0, 0, 0, loc)
 	endTime := startTime.AddDate(0, 1, -1)
 
 	return startTime, endTime, nil
