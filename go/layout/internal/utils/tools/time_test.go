@@ -700,37 +700,127 @@ func TestTimeValue_ToStr(t *testing.T) {
 	}
 }
 
-func TestGetTimestampToStrFormat(t *testing.T) {
-	type args struct {
-		timestamp  int64
-		timezone   string
-		timeFormat string
+func TestTimestampValue_ToTime(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type fields struct {
+		timestamp int64
+		timezone  string
+		layout    string
 	}
 	tests := []struct {
 		name    string
-		args    args
-		want    string
+		fields  fields
+		want    time.Time
 		wantErr bool
 	}{
 		{
-			name: "",
-			args: args{
-				timestamp:  1630861958000,
-				timezone:   TimezoneTaipei,
-				timeFormat: TimeFormatSecond,
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			fields: fields{
+				timestamp: 1584810123000,
+				timezone:  TimezoneTaipei,
+				layout:    TimeFormatHour,
 			},
-			want:    "2021-09-06 01:12:38",
+			want:    time.Date(2020, 3, 22, 1, 0, 0, 0, loc),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTimestampToStrFormat(tt.args.timestamp, tt.args.timezone, tt.args.timeFormat)
+			tv := &TimestampValue{
+				timestamp: tt.fields.timestamp,
+				timezone:  tt.fields.timezone,
+				layout:    tt.fields.layout,
+			}
+			got, err := tv.ToTime()
 			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetTimestampToStrFormat() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ToTime() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
 
+func TestTimestampValue_ToTimestamp(t *testing.T) {
+	type fields struct {
+		timestamp int64
+		timezone  string
+		layout    string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			fields: fields{
+				timestamp: 1584810123000,
+				timezone:  TimezoneTaipei,
+				layout:    TimeFormatHour,
+			},
+			want:    1584810000000,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tv := &TimestampValue{
+				timestamp: tt.fields.timestamp,
+				timezone:  tt.fields.timezone,
+				layout:    tt.fields.layout,
+			}
+			got, err := tv.ToTimestamp()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToTimestamp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestTimestampValue_ToStr(t *testing.T) {
+	type fields struct {
+		timestamp int64
+		timezone  string
+		layout    string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			fields: fields{
+				timestamp: 1584810123000,
+				timezone:  TimezoneTaipei,
+				layout:    TimeFormatHour,
+			},
+			want:    "2020-03-22 01:00:00",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tv := &TimestampValue{
+				timestamp: tt.fields.timestamp,
+				timezone:  tt.fields.timezone,
+				layout:    tt.fields.layout,
+			}
+			got, err := tv.ToStr()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToStr() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			assert.Equal(t, tt.want, got)
 		})
 	}

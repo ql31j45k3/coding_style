@@ -184,14 +184,43 @@ func (tv *TimeValue) ToStr() (string, error) {
 	return timeStr, nil
 }
 
-func GetTimestampToStrFormat(timestamp int64, timezone, timeFormat string) (string, error) {
-	tempTime, err := GetTimestampToTime(timestamp, timezone)
+type TimestampValue struct {
+	timestamp int64
+
+	timezone string
+	layout   string
+}
+
+func (tv *TimestampValue) ToTime() (time.Time, error) {
+	timeStr, err := tv.ToStr()
+	if err != nil {
+		return time.Time{}, fmt.Errorf("tv.ToStr - %w", err)
+	}
+
+	t, err := ParseInLocation(timeStr, tv.timezone, tv.layout)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	return t, nil
+}
+
+func (tv *TimestampValue) ToTimestamp() (int64, error) {
+	t, err := tv.ToTime()
+	if err != nil {
+		return 0, fmt.Errorf("tv.ToTime - %w", err)
+	}
+
+	return TimeConvTimestamp(t), nil
+}
+
+func (tv *TimestampValue) ToStr() (string, error) {
+	tempTime, err := TimestampConvTime(tv.timestamp, tv.timezone)
 	if err != nil {
 		return "", fmt.Errorf("GetTimestampToTime - %w", err)
 	}
 
-	timeStr := tempTime.Format(timeFormat)
-
+	timeStr := tempTime.Format(tv.layout)
 	return timeStr, nil
 }
 
