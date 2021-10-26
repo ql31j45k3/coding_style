@@ -113,46 +113,39 @@ func (nt *NowTime) ToStr() (string, error) {
 	return nowTime.Format(nt.layout), nil
 }
 
-func GetTimeStrToTimestamp(timeStr string, timezone string) (int64, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
+type TimeStrValue struct {
+	timeStr string
 
-	t, err := time.ParseInLocation(TimeFormatSecond, timeStr, loc)
-	if err != nil {
-		return 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return t.UnixNano() / 1e6, nil
+	timezone string
+	layout   string
 }
 
-func GetTimeStrToTimestampAndFormat(timeStr string, timeFormat, timezone string) (int64, error) {
-	loc, err := time.LoadLocation(timezone)
+func (tsv *TimeStrValue) ToTime() (time.Time, error) {
+	t, err := ParseInLocation(tsv.timeStr, tsv.timezone, tsv.layout)
 	if err != nil {
-		return 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	t, err := time.ParseInLocation(timeFormat, timeStr, loc)
-	if err != nil {
-		return 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return t.UnixNano() / 1e6, nil
-}
-
-func GetTimeStrToTime(timeStr string, timeFormat, timezone string) (time.Time, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	t, err := time.ParseInLocation(timeFormat, timeStr, loc)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
+		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
 	}
 
 	return t, nil
+}
+
+func (tsv *TimeStrValue) ToTimestamp() (int64, error) {
+	t, err := tsv.ToTime()
+	if err != nil {
+		return 0, fmt.Errorf("tsv.ToTime - %w", err)
+	}
+
+	return TimeConvTimestamp(t), nil
+}
+
+func (tsv *TimeStrValue) ToStr() (string, error) {
+	t, err := ParseInLocation(tsv.timeStr, tsv.timezone, TimeFormatSecond)
+	if err != nil {
+		return "", fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	timeStr := t.Format(tsv.layout)
+	return timeStr, nil
 }
 
 func GetTimeToTimeFormatAndTimezone(baseTime time.Time, timeFormat, timezone string) (time.Time, error) {
