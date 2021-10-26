@@ -46,18 +46,18 @@ func GetTimeStartAndEnd(nowTime time.Time) (int64, int64) {
 	return startTime, endTime
 }
 
-func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, timeFormat string) (time.Time, time.Time, error) {
+func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, layout string) (time.Time, time.Time, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
 	}
 
-	startTime, err := time.ParseInLocation(timeFormat, startTimeStr, loc)
+	startTime, err := time.ParseInLocation(layout, startTimeStr, loc)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation(startTimeStr) - %w", err)
 	}
 
-	endTime, err := time.ParseInLocation(timeFormat, endTimeStr, loc)
+	endTime, err := time.ParseInLocation(layout, endTimeStr, loc)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation(endTimeStr) - %w", err)
 	}
