@@ -1,134 +1,17 @@
 package tools
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
-
-func GetNowTime(timezone string) (time.Time, error) {
-	t := time.Now()
-	loadLocation, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	return t.In(loadLocation), nil
-}
-
-func GetNowTimeStrAndFormat(timezone, layout string) (string, error) {
-	nowTime, err := GetNowTime(timezone)
-	if err != nil {
-		return "", fmt.Errorf("GetNowTime - %w", err)
-	}
-
-	return nowTime.Format(layout), nil
-}
-
-func GetNowTimeAndFormat(timezone, layout string) (time.Time, error) {
-	now, err := GetNowTime(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("GetNowTime - %w", err)
-	}
-
-	loadLocation, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	nowTime, err := time.ParseInLocation(layout, now.Format(layout), loadLocation)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return nowTime, nil
-}
-
-func GetNowTimestamp(timezone string) (int64, error) {
-	nowTime, err := GetNowTime(timezone)
-	if err != nil {
-		return 0, fmt.Errorf("time.GetNowTimestamp - %w", err)
-	}
-
-	return GetTimeToTimestamp(nowTime), nil
-}
-
-func GetTodayTimestamp() (int64, int64, error) {
-	nowTimeBasic, err := GetNowTime(TimezoneTaipei)
-	if err != nil {
-		return 0, 0, fmt.Errorf("GetNowTime - %w", err)
-	}
-
-	nowDate := nowTimeBasic.Format(TimeFormatDay) + " 00:00:00"
-
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	nowTime, err := time.ParseInLocation(TimeFormatSecond, nowDate, local)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	startTime, endTime := GetTimeStartAndEnd(nowTime)
-
-	return startTime, endTime, nil
-}
-
-func GetTimeStartAndEnd(nowTime time.Time) (int64, int64) {
-	startTime := nowTime.UnixNano() / 1e6
-	endTime := nowTime.AddDate(0, 0, 1).UnixNano() / 1e6
-
-	return startTime, endTime
-}
-
-func GetYesterdayTimestamp(timeStr string) (int64, int64, error) {
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	timeEnd, err := time.ParseInLocation(TimeFormatSecond, timeStr, local)
-	if err != nil {
-		return 0, 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	// 1天前
-	timeStart := timeEnd.AddDate(0, 0, -1)
-	startTime := timeStart.UnixNano() / 1e6
-	endTime := timeEnd.UnixNano() / 1e6
-
-	return startTime, endTime, nil
-}
-
-func GetMonthStartTimeAndEndTime(timeStr, layout string, years, months int) (time.Time, time.Time, error) {
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	basicTime, err := time.ParseInLocation(layout, timeStr, local)
-	if err != nil {
-		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	year, month, _ := basicTime.AddDate(years, months, 0).Date()
-
-	startTime := time.Date(year, month, 1, 0, 0, 0, 0, local)
-	endTime := startTime.AddDate(0, 1, -1)
-
-	return startTime, endTime, nil
-}
 
 func TimestampToMS(timestamp int64) int64 {
 	return timestamp * 1000
 }
 
-// GetTimestampToTime timestamp 帶入到毫秒 13碼
-func GetTimestampToTime(timestamp int64, timezone string) (time.Time, error) {
+// TimestampConvTime timestamp 帶入到毫秒 13碼
+func TimestampConvTime(timestamp int64, timezone string) (time.Time, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
@@ -137,45 +20,17 @@ func GetTimestampToTime(timestamp int64, timezone string) (time.Time, error) {
 	return time.Unix(timestamp/1000, 0).In(loc), nil
 }
 
-func GetTimeToTimestamp(t time.Time) int64 {
+func TimeConvTimestamp(t time.Time) int64 {
 	return t.UnixNano() / 1e6
 }
 
-func GetTimeStrToTimestamp(timeStr string, timezone string) (int64, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	t, err := time.ParseInLocation(TimeFormatSecond, timeStr, loc)
-	if err != nil {
-		return 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return t.UnixNano() / 1e6, nil
-}
-
-func GetTimeStrToTimestampAndFormat(timeStr string, timeFormat, timezone string) (int64, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return 0, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	t, err := time.ParseInLocation(timeFormat, timeStr, loc)
-	if err != nil {
-		return 0, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return t.UnixNano() / 1e6, nil
-}
-
-func GetTimeStrToTime(timeStr string, timeFormat, timezone string) (time.Time, error) {
+func ParseInLocation(timeStr, timezone, layout string) (time.Time, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
 	}
 
-	t, err := time.ParseInLocation(timeFormat, timeStr, loc)
+	t, err := time.ParseInLocation(layout, timeStr, loc)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
 	}
@@ -183,61 +38,276 @@ func GetTimeStrToTime(timeStr string, timeFormat, timezone string) (time.Time, e
 	return t, nil
 }
 
-func GetTimeToTimeFormatAndTimezone(baseTime time.Time, timeFormat, timezone string) (time.Time, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
+func GetTimeStartAndEnd(nowTime time.Time) (int64, int64) {
+	startTime := TimeConvTimestamp(nowTime)
 
-	baseTimeStr := baseTime.Format(timeFormat)
-	t, err := time.ParseInLocation(timeFormat, baseTimeStr, loc)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
+	tempEndTime := nowTime.AddDate(0, 0, 1)
+	endTime := TimeConvTimestamp(tempEndTime)
 
-	return t, nil
+	return startTime, endTime
 }
 
-func GetTimestampToStrFormat(timestamp int64, timezone, timeFormat string) (string, error) {
-	tempTime, err := GetTimestampToTime(timestamp, timezone)
-	if err != nil {
-		return "", fmt.Errorf("GetTimestampToTime - %w", err)
-	}
-
-	timeStr := tempTime.Format(timeFormat)
-
-	return timeStr, nil
-}
-
-func ParseInLocation(timeStr, timezone, timeFormat string) (time.Time, error) {
-	loc, err := time.LoadLocation(timezone)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	result, err := time.ParseInLocation(timeFormat, timeStr, loc)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	return result, nil
-}
-
-func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, timeFormat string) (time.Time, time.Time, error) {
+func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, layout string) (time.Time, time.Time, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
 	}
 
-	startTime, err := time.ParseInLocation(timeFormat, startTimeStr, loc)
+	startTime, err := time.ParseInLocation(layout, startTimeStr, loc)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation(startTimeStr) - %w", err)
 	}
 
-	endTime, err := time.ParseInLocation(timeFormat, endTimeStr, loc)
+	endTime, err := time.ParseInLocation(layout, endTimeStr, loc)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation(endTimeStr) - %w", err)
 	}
+
+	return startTime, endTime, nil
+}
+
+type NowTime struct {
+	timezone string
+	layout   string
+}
+
+func (nt *NowTime) ToTime() (time.Time, error) {
+	if IsEmpty(nt.timezone) {
+		return time.Time{}, errors.New("timezone is not empty")
+	}
+
+	if IsEmpty(nt.layout) {
+		return time.Time{}, errors.New("layout is not empty")
+	}
+
+	t := time.Now()
+	loadLocation, err := time.LoadLocation(nt.timezone)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
+	}
+	t = t.In(loadLocation)
+
+	nowTime, err := time.ParseInLocation(nt.layout, t.Format(nt.layout), loadLocation)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
+	}
+
+	return nowTime, nil
+}
+
+func (nt *NowTime) ToTimestamp() (int64, error) {
+	nowTime, err := nt.ToTime()
+	if err != nil {
+		return 0, fmt.Errorf("nt.ToTime - %w", err)
+	}
+
+	return TimeConvTimestamp(nowTime), nil
+}
+
+func (nt *NowTime) ToStr() (string, error) {
+	nowTime, err := nt.ToTime()
+	if err != nil {
+		return "", fmt.Errorf("nt.ToTime - %w", err)
+	}
+
+	return nowTime.Format(nt.layout), nil
+}
+
+type TimeStrValue struct {
+	timeStr string
+
+	timezone string
+	layout   string
+}
+
+func (tsv *TimeStrValue) ToTime() (time.Time, error) {
+	t, err := ParseInLocation(tsv.timeStr, tsv.timezone, tsv.layout)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	return t, nil
+}
+
+func (tsv *TimeStrValue) ToTimestamp() (int64, error) {
+	t, err := tsv.ToTime()
+	if err != nil {
+		return 0, fmt.Errorf("tsv.ToTime - %w", err)
+	}
+
+	return TimeConvTimestamp(t), nil
+}
+
+func (tsv *TimeStrValue) ToStr() (string, error) {
+	t, err := ParseInLocation(tsv.timeStr, tsv.timezone, TimeFormatSecond)
+	if err != nil {
+		return "", fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	timeStr := t.Format(tsv.layout)
+	return timeStr, nil
+}
+
+type TimeValue struct {
+	baseTime time.Time
+
+	timezone string
+	layout   string
+}
+
+func (tv *TimeValue) ToTime() (time.Time, error) {
+	baseTimeStr := tv.baseTime.Format(tv.layout)
+	t, err := ParseInLocation(baseTimeStr, tv.timezone, tv.layout)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	return t, nil
+}
+
+func (tv *TimeValue) ToTimestamp() (int64, error) {
+	t, err := tv.ToTime()
+	if err != nil {
+		return 0, fmt.Errorf("tv.ToTime - %w", err)
+	}
+
+	return TimeConvTimestamp(t), nil
+}
+
+func (tv *TimeValue) ToStr() (string, error) {
+	t, err := tv.ToTime()
+	if err != nil {
+		return "", fmt.Errorf("tv.ToTime - %w", err)
+	}
+
+	timeStr := t.Format(tv.layout)
+	return timeStr, nil
+}
+
+type TimestampValue struct {
+	timestamp int64
+
+	timezone string
+	layout   string
+}
+
+func (tv *TimestampValue) ToTime() (time.Time, error) {
+	timeStr, err := tv.ToStr()
+	if err != nil {
+		return time.Time{}, fmt.Errorf("tv.ToStr - %w", err)
+	}
+
+	t, err := ParseInLocation(timeStr, tv.timezone, tv.layout)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	return t, nil
+}
+
+func (tv *TimestampValue) ToTimestamp() (int64, error) {
+	t, err := tv.ToTime()
+	if err != nil {
+		return 0, fmt.Errorf("tv.ToTime - %w", err)
+	}
+
+	return TimeConvTimestamp(t), nil
+}
+
+func (tv *TimestampValue) ToStr() (string, error) {
+	tempTime, err := TimestampConvTime(tv.timestamp, tv.timezone)
+	if err != nil {
+		return "", fmt.Errorf("GetTimestampToTime - %w", err)
+	}
+
+	timeStr := tempTime.Format(tv.layout)
+	return timeStr, nil
+}
+
+func GetTodayTimestampDefault() (int64, int64, error) {
+	t := NowTime{
+		timezone: TimezoneTaipei,
+		layout:   TimeFormatSecond,
+	}
+
+	nowTimeBasic, err := t.ToTime()
+	if err != nil {
+		return 0, 0, fmt.Errorf("t.ToTime() - %w", err)
+	}
+
+	return GetTodayTimestamp(nowTimeBasic, "", "")
+}
+
+func GetTodayTimestamp(nowTimeBasic time.Time, timezone, layout string) (int64, int64, error) {
+	if IsEmpty(timezone) {
+		timezone = TimezoneTaipei
+	}
+
+	if IsEmpty(layout) {
+		layout = TimeFormatSecond
+	}
+
+	nowDate := nowTimeBasic.Format(TimeFormatDay) + " 00:00:00"
+
+	nowTime, err := ParseInLocation(nowDate, timezone, layout)
+	if err != nil {
+		return 0, 0, fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	startTime, endTime := GetTimeStartAndEnd(nowTime)
+
+	return startTime, endTime, nil
+}
+
+func GetYesterdayTimestampDefault(timeStr string) (int64, int64, error) {
+	return GetYesterdayTimestamp(timeStr, "", "")
+}
+
+func GetYesterdayTimestamp(timeStr, timezone, layout string) (int64, int64, error) {
+	if IsEmpty(timezone) {
+		timezone = TimezoneTaipei
+	}
+
+	if IsEmpty(layout) {
+		layout = TimeFormatSecond
+	}
+
+	timeEnd, err := ParseInLocation(timeStr, timezone, layout)
+	if err != nil {
+		return 0, 0, fmt.Errorf("ParseInLocation - %w", err)
+	}
+
+	// 1天前
+	timeStart := timeEnd.AddDate(0, 0, -1)
+	startTime := TimeConvTimestamp(timeStart)
+	endTime := TimeConvTimestamp(timeEnd)
+
+	return startTime, endTime, nil
+}
+
+func GetMonthStartTimeAndEndTime(timeStr, timezone, layout string, years, months int) (time.Time, time.Time, error) {
+	if IsEmpty(timezone) {
+		timezone = TimezoneTaipei
+	}
+
+	if IsEmpty(layout) {
+		layout = TimeFormatSecond
+	}
+
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
+	}
+
+	basicTime, err := time.ParseInLocation(layout, timeStr, loc)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
+	}
+
+	year, month, _ := basicTime.AddDate(years, months, 0).Date()
+
+	startTime := time.Date(year, month, 1, 0, 0, 0, 0, loc)
+	endTime := startTime.AddDate(0, 1, -1)
 
 	return startTime, endTime, nil
 }
