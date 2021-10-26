@@ -73,8 +73,8 @@ func TestTimestampConvTime(t *testing.T) {
 	}
 }
 
-func TestGetTimeToTimestamp(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+func TestTimeConvTimestamp(t *testing.T) {
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -91,14 +91,14 @@ func TestGetTimeToTimestamp(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				t: time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+				t: time.Date(2020, 1, 1, 0, 0, 0, 0, loc),
 			},
 			want: 1577808000000,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetTimeToTimestamp(tt.args.t)
+			got := TimeConvTimestamp(tt.args.t)
 			assert.Equal(t, tt.want, got)
 		})
 	}

@@ -19,7 +19,7 @@ func TimestampConvTime(timestamp int64, timezone string) (time.Time, error) {
 	return time.Unix(timestamp/1000, 0).In(loc), nil
 }
 
-func GetTimeToTimestamp(t time.Time) int64 {
+func TimeConvTimestamp(t time.Time) int64 {
 	return t.UnixNano() / 1e6
 }
 
