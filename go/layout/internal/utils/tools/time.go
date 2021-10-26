@@ -38,8 +38,10 @@ func ParseInLocation(timeStr, timezone, layout string) (time.Time, error) {
 }
 
 func GetTimeStartAndEnd(nowTime time.Time) (int64, int64) {
-	startTime := nowTime.UnixNano() / 1e6
-	endTime := nowTime.AddDate(0, 0, 1).UnixNano() / 1e6
+	startTime := TimeConvTimestamp(nowTime)
+
+	tempEndTime := nowTime.AddDate(0, 0, 1)
+	endTime := TimeConvTimestamp(tempEndTime)
 
 	return startTime, endTime
 }

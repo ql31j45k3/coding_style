@@ -146,7 +146,7 @@ func TestParseInLocation(t *testing.T) {
 }
 
 func TestGetTimeStartAndEnd(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
@@ -164,7 +164,7 @@ func TestGetTimeStartAndEnd(t *testing.T) {
 		{
 			name: "nowTime= 2021-09-30 09:30:00",
 			args: args{
-				nowTime: time.Date(2021, 9, 30, 9, 30, 0, 0, local),
+				nowTime: time.Date(2021, 9, 30, 9, 30, 0, 0, loc),
 			},
 			want:  1632965400000,
 			want1: 1633051800000,
