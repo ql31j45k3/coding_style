@@ -351,40 +351,6 @@ func TestGetNowTimestamp(t *testing.T) {
 	}
 }
 
-func TestGetYesterdayTimestamp(t *testing.T) {
-	type args struct {
-		timeStr string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int64
-		want1   int64
-		wantErr bool
-	}{
-		{
-			name: "",
-			args: args{
-				timeStr: "2020-03-22 00:00:00",
-			},
-			want:    1584720000000,
-			want1:   1584806400000,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetYesterdayTimestamp(tt.args.timeStr)
-			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetYesterdayTimestamp error = %v", err)
-				return
-			}
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.want1, got1)
-		})
-	}
-}
-
 func TestGetTimeStrToTimestamp(t *testing.T) {
 	type args struct {
 		timeStr  string
@@ -569,6 +535,40 @@ func TestGetTimestampToStrFormat(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestGetYesterdayTimestamp(t *testing.T) {
+	type args struct {
+		timeStr string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		want1   int64
+		wantErr bool
+	}{
+		{
+			name: "",
+			args: args{
+				timeStr: "2020-03-22 00:00:00",
+			},
+			want:    1584720000000,
+			want1:   1584806400000,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := GetYesterdayTimestamp(tt.args.timeStr)
+			if (err != nil) != tt.wantErr {
+				assert.NoError(t, err, "GetYesterdayTimestamp error = %v", err)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
