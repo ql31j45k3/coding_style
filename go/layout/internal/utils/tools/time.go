@@ -154,26 +154,6 @@ func GetYesterdayTimestamp(timeStr string) (int64, int64, error) {
 	return startTime, endTime, nil
 }
 
-func GetMonthStartTimeAndEndTime(timeStr, layout string, years, months int) (time.Time, time.Time, error) {
-	// 時間轉換
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
-	}
-
-	basicTime, err := time.ParseInLocation(layout, timeStr, local)
-	if err != nil {
-		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
-	}
-
-	year, month, _ := basicTime.AddDate(years, months, 0).Date()
-
-	startTime := time.Date(year, month, 1, 0, 0, 0, 0, local)
-	endTime := startTime.AddDate(0, 1, -1)
-
-	return startTime, endTime, nil
-}
-
 func GetTimeStrToTimestamp(timeStr string, timezone string) (int64, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
@@ -240,6 +220,26 @@ func GetTimestampToStrFormat(timestamp int64, timezone, timeFormat string) (stri
 	timeStr := tempTime.Format(timeFormat)
 
 	return timeStr, nil
+}
+
+func GetMonthStartTimeAndEndTime(timeStr, layout string, years, months int) (time.Time, time.Time, error) {
+	// 時間轉換
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
+	}
+
+	basicTime, err := time.ParseInLocation(layout, timeStr, local)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
+	}
+
+	year, month, _ := basicTime.AddDate(years, months, 0).Date()
+
+	startTime := time.Date(year, month, 1, 0, 0, 0, 0, local)
+	endTime := startTime.AddDate(0, 1, -1)
+
+	return startTime, endTime, nil
 }
 
 func GetTimeSubDay(t1, t2 time.Time) int {

@@ -385,53 +385,6 @@ func TestGetYesterdayTimestamp(t *testing.T) {
 	}
 }
 
-func TestGetMonthStartTimeAndEndTime(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-
-	type args struct {
-		timeStr string
-		layout  string
-		years   int
-		months  int
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    time.Time
-		want1   time.Time
-		wantErr bool
-	}{
-		{
-			name: "",
-			args: args{
-				timeStr: "2020-03-22 00:00:00",
-				layout:  TimeFormatSecond,
-				years:   0,
-				months:  -2,
-			},
-			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
-			want1:   time.Date(2020, 1, 31, 0, 0, 0, 0, local),
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetMonthStartTimeAndEndTime(tt.args.timeStr, tt.args.layout, tt.args.years, tt.args.months)
-			if (err != nil) != tt.wantErr {
-				assert.NoError(t, err, "GetMonthStartTimeAndEndTime error = %v", err)
-				return
-			}
-
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.want1, got1)
-		})
-	}
-}
-
 func TestGetTimeStrToTimestamp(t *testing.T) {
 	type args struct {
 		timeStr  string
@@ -616,6 +569,53 @@ func TestGetTimestampToStrFormat(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestGetMonthStartTimeAndEndTime(t *testing.T) {
+	local, err := time.LoadLocation(TimezoneTaipei)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
+	type args struct {
+		timeStr string
+		layout  string
+		years   int
+		months  int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    time.Time
+		want1   time.Time
+		wantErr bool
+	}{
+		{
+			name: "",
+			args: args{
+				timeStr: "2020-03-22 00:00:00",
+				layout:  TimeFormatSecond,
+				years:   0,
+				months:  -2,
+			},
+			want:    time.Date(2020, 1, 1, 0, 0, 0, 0, local),
+			want1:   time.Date(2020, 1, 31, 0, 0, 0, 0, local),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := GetMonthStartTimeAndEndTime(tt.args.timeStr, tt.args.layout, tt.args.years, tt.args.months)
+			if (err != nil) != tt.wantErr {
+				assert.NoError(t, err, "GetMonthStartTimeAndEndTime error = %v", err)
+				return
+			}
+
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
