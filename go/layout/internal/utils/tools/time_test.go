@@ -105,16 +105,16 @@ func TestTimeConvTimestamp(t *testing.T) {
 }
 
 func TestParseInLocation(t *testing.T) {
-	local, err := time.LoadLocation(TimezoneTaipei)
+	loc, err := time.LoadLocation(TimezoneTaipei)
 	if err != nil {
 		t.Log(err)
 		return
 	}
 
 	type args struct {
-		timeStr    string
-		timezone   string
-		timeFormat string
+		timeStr  string
+		timezone string
+		layout   string
 	}
 	tests := []struct {
 		name    string
@@ -125,17 +125,17 @@ func TestParseInLocation(t *testing.T) {
 		{
 			name: "",
 			args: args{
-				timeStr:    "2020-03-22 00:00:00",
-				timezone:   TimezoneTaipei,
-				timeFormat: TimeFormatSecond,
+				timeStr:  "2020-03-22 00:00:00",
+				timezone: TimezoneTaipei,
+				layout:   TimeFormatSecond,
 			},
-			want:    time.Date(2020, 3, 22, 0, 0, 0, 0, local),
+			want:    time.Date(2020, 3, 22, 0, 0, 0, 0, loc),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseInLocation(tt.args.timeStr, tt.args.timezone, tt.args.timeFormat)
+			got, err := ParseInLocation(tt.args.timeStr, tt.args.timezone, tt.args.layout)
 			if (err != nil) != tt.wantErr {
 				assert.NoError(t, err, "ParseInLocation error = %v", err)
 				return
