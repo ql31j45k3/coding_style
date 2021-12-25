@@ -64,7 +64,7 @@ func (vi versionInfo) String() string {
 }
 
 func IsPrintVersion() bool {
-	if IsUseVersion() {
+	if isUseVersion() {
 		fmt.Println(newVersion())
 		return true
 	}
@@ -72,6 +72,6 @@ func IsPrintVersion() bool {
 	return false
 }
 
-func IsUseVersion() bool {
+func isUseVersion() bool {
 	return viper.GetBool("version")
 }

@@ -38,6 +38,10 @@ func Start() error {
 	viper.SetConfigType("yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
+		if isUseVersion() {
+			return nil
+		}
+
 		return fmt.Errorf("viper.ReadInConfig - %w", err)
 	}
 
@@ -68,6 +72,7 @@ func Start() error {
 }
 
 func parseFlag() error {
+	pflag.Bool("version", false, "version")
 	pflag.String("configFile", "", "configFile path")
 
 	pflag.Parse()

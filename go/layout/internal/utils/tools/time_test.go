@@ -201,7 +201,7 @@ func TestGetStartTimeAndEndTime(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "startTimeStr= 2021-09-30 09:30:00, endTimeStr= 2021-09-30 18:30:00, timezone= TimezoneTaipei, layout= TimeFormatSecond",
+			name: "startTimeStr= 2021-09-30 09:30:00, endTimeStr= 2021-09-30 18:30:00, Timezone= TimezoneTaipei, Layout= TimeFormatSecond",
 			args: args{
 				startTimeStr: "2021-09-30 09:30:00",
 				endTimeStr:   "2021-09-30 18:30:00",
@@ -261,7 +261,7 @@ func TestNowTime_ToTime(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "nowTime layout= TimeFormatSecond",
+			name: "nowTime Layout= TimeFormatSecond",
 			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatSecond,
@@ -270,7 +270,7 @@ func TestNowTime_ToTime(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "nowTime layout= TimeFormatDay",
+			name: "nowTime Layout= TimeFormatDay",
 			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatDay,
@@ -282,8 +282,8 @@ func TestNowTime_ToTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			nt := &NowTime{
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := nt.ToTime()
 			if (err != nil) != tt.wantErr {
@@ -319,7 +319,7 @@ func TestNowTime_ToTimestamp(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "nowTime layout= TimeFormatSecond",
+			name: "nowTime Layout= TimeFormatSecond",
 			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatSecond,
@@ -328,7 +328,7 @@ func TestNowTime_ToTimestamp(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "nowTime layout= TimeFormatDay",
+			name: "nowTime Layout= TimeFormatDay",
 			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatDay,
@@ -340,8 +340,8 @@ func TestNowTime_ToTimestamp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			nt := &NowTime{
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := nt.ToTimestamp()
 			if (err != nil) != tt.wantErr {
@@ -371,7 +371,7 @@ func TestNowTime_ToStr(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "nowTime layout= TimeFormatSecond",
+			name: "nowTime Layout= TimeFormatSecond",
 			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatSecond,
@@ -380,7 +380,7 @@ func TestNowTime_ToStr(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "nowTime layout= TimeFormatDay",
+			name: "nowTime Layout= TimeFormatDay",
 			fields: fields{
 				timezone: TimezoneTaipei,
 				layout:   TimeFormatDay,
@@ -392,8 +392,8 @@ func TestNowTime_ToStr(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			nt := &NowTime{
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := nt.ToStr()
 			if (err != nil) != tt.wantErr {
@@ -424,7 +424,7 @@ func TestTimeStrValue_ToTime(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "timeStr = 2020-03-22 00:00:00",
+			name: "TimeStr = 2020-03-22 00:00:00",
 			fields: fields{
 				timeStr:  "2020-03-22 00:00:00",
 				timezone: TimezoneTaipei,
@@ -437,9 +437,9 @@ func TestTimeStrValue_ToTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tsv := &TimeStrValue{
-				timeStr:  tt.fields.timeStr,
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				TimeStr:  tt.fields.timeStr,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := tsv.ToTime()
 			if (err != nil) != tt.wantErr {
@@ -464,7 +464,7 @@ func TestTimeStrValue_ToTimestamp(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "timeStr = 2020-03-22 00:00:00",
+			name: "TimeStr = 2020-03-22 00:00:00",
 			fields: fields{
 				timeStr:  "2020-03-22 00:00:00",
 				timezone: TimezoneTaipei,
@@ -477,9 +477,9 @@ func TestTimeStrValue_ToTimestamp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tsv := &TimeStrValue{
-				timeStr:  tt.fields.timeStr,
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				TimeStr:  tt.fields.timeStr,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := tsv.ToTimestamp()
 			if (err != nil) != tt.wantErr {
@@ -504,7 +504,7 @@ func TestTimeStrValue_ToStr(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "timeStr = 2020-03-22 01:02:03, layout= TimeFormatDay",
+			name: "TimeStr = 2020-03-22 01:02:03, Layout= TimeFormatDay",
 			fields: fields{
 				timeStr:  "2020-03-22 01:02:03",
 				timezone: TimezoneTaipei,
@@ -514,7 +514,7 @@ func TestTimeStrValue_ToStr(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "timeStr = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "TimeStr = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				timeStr:  "2020-03-22 01:02:03",
 				timezone: TimezoneTaipei,
@@ -527,9 +527,9 @@ func TestTimeStrValue_ToStr(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tsv := &TimeStrValue{
-				timeStr:  tt.fields.timeStr,
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				TimeStr:  tt.fields.timeStr,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := tsv.ToStr()
 			if (err != nil) != tt.wantErr {
@@ -560,7 +560,7 @@ func TestTimeValue_ToTime(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
 				timezone: TimezoneTaipei,
@@ -570,7 +570,7 @@ func TestTimeValue_ToTime(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatMonth",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatMonth",
 			fields: fields{
 				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
 				timezone: TimezoneTaipei,
@@ -580,7 +580,7 @@ func TestTimeValue_ToTime(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour2",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour2",
 			fields: fields{
 				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
 				timezone: TimezoneTaipei,
@@ -593,9 +593,9 @@ func TestTimeValue_ToTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tv := &TimeValue{
-				baseTime: tt.fields.baseTime,
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				BaseTime: tt.fields.baseTime,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := tv.ToTime()
 			if (err != nil) != tt.wantErr {
@@ -627,7 +627,7 @@ func TestTimeValue_ToTimestamp(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
 				timezone: TimezoneTaipei,
@@ -640,9 +640,9 @@ func TestTimeValue_ToTimestamp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tv := &TimeValue{
-				baseTime: tt.fields.baseTime,
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				BaseTime: tt.fields.baseTime,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := tv.ToTimestamp()
 			if (err != nil) != tt.wantErr {
@@ -673,7 +673,7 @@ func TestTimeValue_ToStr(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				baseTime: time.Date(2020, 3, 22, 1, 2, 3, 0, loc),
 				timezone: TimezoneTaipei,
@@ -686,9 +686,9 @@ func TestTimeValue_ToStr(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tv := &TimeValue{
-				baseTime: tt.fields.baseTime,
-				timezone: tt.fields.timezone,
-				layout:   tt.fields.layout,
+				BaseTime: tt.fields.baseTime,
+				Timezone: tt.fields.timezone,
+				Layout:   tt.fields.layout,
 			}
 			got, err := tv.ToStr()
 			if (err != nil) != tt.wantErr {
@@ -719,7 +719,7 @@ func TestTimestampValue_ToTime(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				timestamp: 1584810123000,
 				timezone:  TimezoneTaipei,
@@ -732,9 +732,9 @@ func TestTimestampValue_ToTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tv := &TimestampValue{
-				timestamp: tt.fields.timestamp,
-				timezone:  tt.fields.timezone,
-				layout:    tt.fields.layout,
+				Timestamp: tt.fields.timestamp,
+				Timezone:  tt.fields.timezone,
+				Layout:    tt.fields.layout,
 			}
 			got, err := tv.ToTime()
 			if (err != nil) != tt.wantErr {
@@ -759,7 +759,7 @@ func TestTimestampValue_ToTimestamp(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				timestamp: 1584810123000,
 				timezone:  TimezoneTaipei,
@@ -772,9 +772,9 @@ func TestTimestampValue_ToTimestamp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tv := &TimestampValue{
-				timestamp: tt.fields.timestamp,
-				timezone:  tt.fields.timezone,
-				layout:    tt.fields.layout,
+				Timestamp: tt.fields.timestamp,
+				Timezone:  tt.fields.timezone,
+				Layout:    tt.fields.layout,
 			}
 			got, err := tv.ToTimestamp()
 			if (err != nil) != tt.wantErr {
@@ -799,7 +799,7 @@ func TestTimestampValue_ToStr(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "baseTime = 2020-03-22 01:02:03, layout= TimeFormatHour",
+			name: "BaseTime = 2020-03-22 01:02:03, Layout= TimeFormatHour",
 			fields: fields{
 				timestamp: 1584810123000,
 				timezone:  TimezoneTaipei,
@@ -812,9 +812,9 @@ func TestTimestampValue_ToStr(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tv := &TimestampValue{
-				timestamp: tt.fields.timestamp,
-				timezone:  tt.fields.timezone,
-				layout:    tt.fields.layout,
+				Timestamp: tt.fields.timestamp,
+				Timezone:  tt.fields.timezone,
+				Layout:    tt.fields.layout,
 			}
 			got, err := tv.ToStr()
 			if (err != nil) != tt.wantErr {
