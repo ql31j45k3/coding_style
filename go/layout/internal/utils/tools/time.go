@@ -67,27 +67,27 @@ func GetStartTimeAndEndTime(startTimeStr, endTimeStr, timezone, layout string) (
 }
 
 type NowTime struct {
-	timezone string
-	layout   string
+	Timezone string
+	Layout   string
 }
 
 func (nt *NowTime) ToTime() (time.Time, error) {
-	if IsEmpty(nt.timezone) {
-		return time.Time{}, errors.New("timezone is not empty")
+	if IsEmpty(nt.Timezone) {
+		return time.Time{}, errors.New("Timezone is not empty")
 	}
 
-	if IsEmpty(nt.layout) {
-		return time.Time{}, errors.New("layout is not empty")
+	if IsEmpty(nt.Layout) {
+		return time.Time{}, errors.New("Layout is not empty")
 	}
 
 	t := time.Now()
-	loadLocation, err := time.LoadLocation(nt.timezone)
+	loadLocation, err := time.LoadLocation(nt.Timezone)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.LoadLocation - %w", err)
 	}
 	t = t.In(loadLocation)
 
-	nowTime, err := time.ParseInLocation(nt.layout, t.Format(nt.layout), loadLocation)
+	nowTime, err := time.ParseInLocation(nt.Layout, t.Format(nt.Layout), loadLocation)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time.ParseInLocation - %w", err)
 	}
@@ -110,18 +110,18 @@ func (nt *NowTime) ToStr() (string, error) {
 		return "", fmt.Errorf("nt.ToTime - %w", err)
 	}
 
-	return nowTime.Format(nt.layout), nil
+	return nowTime.Format(nt.Layout), nil
 }
 
 type TimeStrValue struct {
-	timeStr string
+	TimeStr string
 
-	timezone string
-	layout   string
+	Timezone string
+	Layout   string
 }
 
 func (tsv *TimeStrValue) ToTime() (time.Time, error) {
-	t, err := ParseInLocation(tsv.timeStr, tsv.timezone, tsv.layout)
+	t, err := ParseInLocation(tsv.TimeStr, tsv.Timezone, tsv.Layout)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
 	}
@@ -139,25 +139,25 @@ func (tsv *TimeStrValue) ToTimestamp() (int64, error) {
 }
 
 func (tsv *TimeStrValue) ToStr() (string, error) {
-	t, err := ParseInLocation(tsv.timeStr, tsv.timezone, TimeFormatSecond)
+	t, err := ParseInLocation(tsv.TimeStr, tsv.Timezone, TimeFormatSecond)
 	if err != nil {
 		return "", fmt.Errorf("ParseInLocation - %w", err)
 	}
 
-	timeStr := t.Format(tsv.layout)
+	timeStr := t.Format(tsv.Layout)
 	return timeStr, nil
 }
 
 type TimeValue struct {
-	baseTime time.Time
+	BaseTime time.Time
 
-	timezone string
-	layout   string
+	Timezone string
+	Layout   string
 }
 
 func (tv *TimeValue) ToTime() (time.Time, error) {
-	baseTimeStr := tv.baseTime.Format(tv.layout)
-	t, err := ParseInLocation(baseTimeStr, tv.timezone, tv.layout)
+	baseTimeStr := tv.BaseTime.Format(tv.Layout)
+	t, err := ParseInLocation(baseTimeStr, tv.Timezone, tv.Layout)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
 	}
@@ -180,15 +180,15 @@ func (tv *TimeValue) ToStr() (string, error) {
 		return "", fmt.Errorf("tv.ToTime - %w", err)
 	}
 
-	timeStr := t.Format(tv.layout)
+	timeStr := t.Format(tv.Layout)
 	return timeStr, nil
 }
 
 type TimestampValue struct {
-	timestamp int64
+	Timestamp int64
 
-	timezone string
-	layout   string
+	Timezone string
+	Layout   string
 }
 
 func (tv *TimestampValue) ToTime() (time.Time, error) {
@@ -197,7 +197,7 @@ func (tv *TimestampValue) ToTime() (time.Time, error) {
 		return time.Time{}, fmt.Errorf("tv.ToStr - %w", err)
 	}
 
-	t, err := ParseInLocation(timeStr, tv.timezone, tv.layout)
+	t, err := ParseInLocation(timeStr, tv.Timezone, tv.Layout)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("ParseInLocation - %w", err)
 	}
@@ -215,19 +215,19 @@ func (tv *TimestampValue) ToTimestamp() (int64, error) {
 }
 
 func (tv *TimestampValue) ToStr() (string, error) {
-	tempTime, err := TimestampConvTime(tv.timestamp, tv.timezone)
+	tempTime, err := TimestampConvTime(tv.Timestamp, tv.Timezone)
 	if err != nil {
 		return "", fmt.Errorf("GetTimestampToTime - %w", err)
 	}
 
-	timeStr := tempTime.Format(tv.layout)
+	timeStr := tempTime.Format(tv.Layout)
 	return timeStr, nil
 }
 
 func GetTodayTimestampDefault() (int64, int64, error) {
 	t := NowTime{
-		timezone: TimezoneTaipei,
-		layout:   TimeFormatSecond,
+		Timezone: TimezoneTaipei,
+		Layout:   TimeFormatSecond,
 	}
 
 	nowTimeBasic, err := t.ToTime()
