@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type mongoOption func(opt *options.ClientOptions) *options.ClientOptions
+type mongoOption func(opt *options.ClientOptions)
 
 func NewMongoDBConnect(ctx context.Context, uri string, mongoOptions ...mongoOption) (*mongo.Client, error) {
 	clientOpt := options.Client()
@@ -31,19 +31,17 @@ func NewMongoDBConnect(ctx context.Context, uri string, mongoOptions ...mongoOpt
 }
 
 func WithMongoHosts(hosts []string) mongoOption {
-	return func(opt *options.ClientOptions) *options.ClientOptions {
+	return func(opt *options.ClientOptions) {
 		if len(hosts) > 0 {
 			opt.SetHosts(hosts)
 		}
-
-		return opt
 	}
 }
 
 func WithMongoAuth(authMechanism, username, password string) mongoOption {
-	return func(opt *options.ClientOptions) *options.ClientOptions {
+	return func(opt *options.ClientOptions) {
 		if authMechanism == "Direct" {
-			return opt
+			return
 		}
 
 		if authMechanism == "PLAIN" {
@@ -53,7 +51,7 @@ func WithMongoAuth(authMechanism, username, password string) mongoOption {
 				Password:      password,
 			})
 
-			return opt
+			return
 		}
 
 		if authMechanism == "SCRAM" {
@@ -62,35 +60,29 @@ func WithMongoAuth(authMechanism, username, password string) mongoOption {
 				Password: password,
 			})
 
-			return opt
+			return
 		}
-
-		return opt
 	}
 }
 
 func WithMongoReplicaSet(replicaSet string) mongoOption {
-	return func(opt *options.ClientOptions) *options.ClientOptions {
+	return func(opt *options.ClientOptions) {
 		if tools.IsNotEmpty(replicaSet) {
 			opt.SetReplicaSet(replicaSet)
 		}
-
-		return opt
 	}
 }
 
 func WithMongoPool(minPoolSize, maxPoolSize uint64, maxConnIdleTime time.Duration) mongoOption {
-	return func(opt *options.ClientOptions) *options.ClientOptions {
+	return func(opt *options.ClientOptions) {
 		opt.SetMinPoolSize(minPoolSize)
 		opt.SetMaxPoolSize(maxPoolSize)
 		opt.SetMaxConnIdleTime(maxConnIdleTime)
-
-		return opt
 	}
 }
 
 func WithMongoPoolMonitor() mongoOption {
-	return func(opt *options.ClientOptions) *options.ClientOptions {
+	return func(opt *options.ClientOptions) {
 		var po *event.MonitorPoolOptions
 		m := &event.PoolMonitor{
 			Event: func(poolEvent *event.PoolEvent) {
@@ -109,7 +101,5 @@ func WithMongoPoolMonitor() mongoOption {
 		}
 
 		opt.SetPoolMonitor(m)
-
-		return opt
 	}
 }
