@@ -11,7 +11,5 @@ type UseCaseMember interface {
 }
 
 type member struct {
-	_ struct{}
-
 	repositoryMember
 }

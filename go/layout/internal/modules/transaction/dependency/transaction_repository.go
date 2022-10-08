@@ -17,13 +17,10 @@ type repositoryTransaction interface {
 }
 
 type transactionDB struct {
-	_ struct{}
-
 	transactionPostgres
 }
 
 type transactionPostgres struct {
-	_ struct{}
 }
 
 func (tp *transactionPostgres) InsertTransactions(dbM *gorm.DB, transactionLog TransactionLog) error {

@@ -15,7 +15,5 @@ type UseCaseTransaction interface {
 }
 
 type transaction struct {
-	_ struct{}
-
 	repositoryTransaction
 }

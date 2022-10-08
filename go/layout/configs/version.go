@@ -32,8 +32,6 @@ func newVersion() versionInfo {
 }
 
 type versionInfo struct {
-	_ struct{}
-
 	buildDate string
 
 	gitBranch string

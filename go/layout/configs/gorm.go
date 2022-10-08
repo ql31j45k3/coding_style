@@ -37,8 +37,6 @@ func newConfigGorm() *configGorm {
 }
 
 type configGorm struct {
-	_ struct{}
-
 	host     string
 	port     string
 	user     string

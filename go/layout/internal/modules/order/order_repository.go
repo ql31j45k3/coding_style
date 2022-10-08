@@ -38,7 +38,6 @@ type repositoryOrder interface {
 }
 
 type orderMongo struct {
-	_ struct{}
 }
 
 func (om *orderMongo) GetOrderID(mongoRS *mongo.Client, account string) (orderData, error) {

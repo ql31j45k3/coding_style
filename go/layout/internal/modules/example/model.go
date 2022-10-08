@@ -14,16 +14,12 @@ type APIExampleCond struct {
 }
 
 type taskMap struct {
-	_ struct{}
-
 	sync.RWMutex
 
 	taskID2Detail map[string]taskMapDetail
 }
 
 type taskMapDetail struct {
-	_ struct{}
-
 	goCount     int
 	finishCount int
 }
@@ -52,30 +48,22 @@ func (r *taskMap) set(taskID string, v taskMapDetail) {
 }
 
 type taskData struct {
-	_ struct{}
-
 	taskID string
 
 	task *taskMap
 }
 
 type responseGoroutine struct {
-	_ struct{}
-
 	TaskID string `json:"task_id"`
 }
 
 type responseTaskStatus struct {
-	_ struct{}
-
 	TaskID string `json:"task_id"`
 
 	Detail responseTaskStatusDetail `json:"detail"`
 }
 
 type responseTaskStatusDetail struct {
-	_ struct{}
-
 	GoCount     int `json:"go_count"`
 	FinishCount int `json:"finish_count"`
 }

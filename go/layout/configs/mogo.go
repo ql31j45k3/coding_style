@@ -32,8 +32,6 @@ func newConfigMongo() *configMongo {
 }
 
 type configMongo struct {
-	_ struct{}
-
 	timeout time.Duration
 
 	authMechanism string

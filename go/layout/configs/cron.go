@@ -24,8 +24,6 @@ func newConfigCron() *configCron {
 }
 
 type configCron struct {
-	_ struct{}
-
 	sync.RWMutex
 
 	enforceTransactionStatus bool

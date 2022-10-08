@@ -35,8 +35,6 @@ type APIOrderCond struct {
 }
 
 type orderGetCond struct {
-	_ struct{}
-
 	startTime string
 	endTime   string
 	timezone  string
@@ -53,8 +51,6 @@ func (ogc *orderGetCond) parse(c *gin.Context) {
 }
 
 type responseOrderGet struct {
-	_ struct{}
-
 	StartTime string `json:"start_time"`
 	EndTime   string `json:"end_time"`
 	Timezone  string `json:"timezone"`
@@ -63,8 +59,6 @@ type responseOrderGet struct {
 }
 
 type orderData struct {
-	_ struct{}
-
 	OrderID string `bson:"order_id"`
 
 	Amount float64 `bson:"amount"`

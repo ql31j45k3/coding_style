@@ -24,7 +24,6 @@ type repositoryIndex interface {
 }
 
 type indexMongo struct {
-	_ struct{}
 }
 
 func (im *indexMongo) CreateIndexOrder(mongoRS *mongo.Client) {

@@ -26,8 +26,6 @@ type useCaseOrder interface {
 }
 
 type order struct {
-	_ struct{}
-
 	repositoryOrder
 }
 

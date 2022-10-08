@@ -27,8 +27,6 @@ func RegisterRouterHealth(condAPI APIHealthCond) {
 }
 
 type health struct {
-	_ struct{}
-
 	dbM *gorm.DB
 
 	mongoRS *mongo.Client
