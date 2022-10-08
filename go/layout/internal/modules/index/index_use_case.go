@@ -17,8 +17,6 @@ type useCaseIndex interface {
 }
 
 type index struct {
-	_ struct{}
-
 	repositoryIndex
 }
 

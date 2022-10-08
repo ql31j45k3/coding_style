@@ -9,7 +9,6 @@ type repositoryMember interface {
 }
 
 type memberMongo struct {
-	_ struct{}
 }
 
 func (mm *memberMongo) GetMember() Members {

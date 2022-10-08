@@ -1,0 +1,17 @@
+env:
+  log:
+    level: debug
+    path: /Users/michael_kao/Documents/github/ql31j45k3/coding_style/go/layout_2/logs/demo_2_log
+  debug: true
+  server:
+    port: 8080
+
+db:
+  gorm:
+    logMode: Info
+  master:
+    host: 127.0.0.1
+    port: 3306
+    username: root
+    password: 123456
+    name: demo_2

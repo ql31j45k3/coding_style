@@ -29,8 +29,6 @@ func registerRouterOrderApp(ctxStopNotify context.Context, condAPI APIOrderCond,
 }
 
 type orderControllerApp struct {
-	_ struct{}
-
 	ctxStopNotify context.Context
 
 	condAPI APIOrderCond

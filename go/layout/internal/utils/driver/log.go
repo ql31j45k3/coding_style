@@ -66,7 +66,6 @@ func ReloadSetLogLevel() {
 }
 
 type serverIPHock struct {
-	_ struct{}
 }
 
 func (h *serverIPHock) Levels() []log.Level {

@@ -46,8 +46,6 @@ func IsErrRecordNotFound(c *gin.Context, err error) {
 }
 
 type ResponseBasic struct {
-	_ struct{}
-
 	Code     int         `json:"code"`
 	Messages []string    `json:"messages"`
 	Data     interface{} `json:"data"`
@@ -70,8 +68,6 @@ func NewResponseBasicError(messages []string) ResponseBasic {
 
 // Model 對外回傳基礎欄位
 type Model struct {
-	_ struct{}
-
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -79,8 +75,6 @@ type Model struct {
 
 // Pagination 查詢分頁欄位
 type Pagination struct {
-	_ struct{}
-
 	PageIndex int `json:"page_index"`
 	PageSize  int `json:"page_size"`
 }

@@ -7,8 +7,6 @@ const (
 )
 
 type TransactionLog struct {
-	_ struct{}
-
 	TransAt int64  `bson:"trans_at"`
 	Account string `bson:"account"`
 	OrderID string `bson:"order_id"`

@@ -23,12 +23,14 @@ type MongoDatabaseFunc func() string
 func (f MongoDatabaseFunc) GetDatabase() string { return f() }
 
 type MongoCollection interface {
-	GetCollectionName(opCode string) string
+	GetCollectionName() string
 }
 
-type MongoCollectionFunc func(opCode string) string
+type MongoCollectionFunc func() string
 
-func (f MongoCollectionFunc) GetCollectionName(opCode string) string { return f(opCode) }
+func (f MongoCollectionFunc) GetCollectionName() string {
+	return f()
+}
 
 type MongoDatabaseAndCollection interface {
 	MongoDatabase
@@ -39,8 +41,8 @@ func SetMongoDatabase(client *mongo.Client, model MongoDatabase, opts ...*option
 	return client.Database(model.GetDatabase(), opts...)
 }
 
-func SetMongoCollection(db *mongo.Database, model MongoCollection, opCode string, opts ...*options.CollectionOptions) *mongo.Collection {
-	return db.Collection(model.GetCollectionName(opCode), opts...)
+func SetMongoCollection(db *mongo.Database, model MongoCollection, opts ...*options.CollectionOptions) *mongo.Collection {
+	return db.Collection(model.GetCollectionName(), opts...)
 }
 
 func Disconnect(ctx context.Context, client *mongo.Client) error {
@@ -57,7 +59,7 @@ func Disconnect(ctx context.Context, client *mongo.Client) error {
 	return nil
 }
 
-func ExistsCollection(ctx context.Context, db *mongo.Database, filter bson.M) (bool, error) {
+func ExistsCollection(ctx context.Context, db *mongo.Database, filter interface{}) (bool, error) {
 	var cancelCtx context.CancelFunc
 	if ctx == nil {
 		ctx, cancelCtx = context.WithTimeout(context.Background(), 30*time.Second)
@@ -89,7 +91,7 @@ func CreateManyIndexMaxTime(ctx context.Context, collection *mongo.Collection, m
 }
 
 func ExistsCollectionAndCreateManyIndexMaxTime(existsCollectionTimeout time.Duration, createManyIndexTimeout time.Duration,
-	mongoRS *mongo.Client, mongoDatabase, mongoCollection, opCode string, models []mongo.IndexModel) ([]string, error) {
+	mongoRS *mongo.Client, mongoDatabase, mongoCollection string, models []mongo.IndexModel) ([]string, error) {
 	ctx, cancelCtx := context.WithTimeout(context.Background(), existsCollectionTimeout)
 	defer cancelCtx()
 
@@ -97,13 +99,13 @@ func ExistsCollectionAndCreateManyIndexMaxTime(existsCollectionTimeout time.Dura
 		return mongoDatabase
 	}
 
-	modelMongoCollection := func(opCode string) string {
-		return opCode + mongoCollection
+	modelMongoCollection := func() string {
+		return mongoCollection
 	}
 
 	mongoRSDB := SetMongoDatabase(mongoRS, MongoDatabaseFunc(modelMongoDatabase))
 
-	filter := bson.M{"name": MongoCollectionFunc(modelMongoCollection).GetCollectionName(opCode)}
+	filter := bson.M{"name": MongoCollectionFunc(modelMongoCollection).GetCollectionName()}
 	ok, err := ExistsCollection(ctx, mongoRSDB, filter)
 	if err != nil {
 		return []string{}, fmt.Errorf("ExistsCollectionSingle - %w", err)
@@ -117,7 +119,7 @@ func ExistsCollectionAndCreateManyIndexMaxTime(existsCollectionTimeout time.Dura
 	ctxIndex, cancelCtxCursor := context.WithTimeout(context.Background(), createManyIndexTimeout)
 	defer cancelCtxCursor()
 
-	collection := SetMongoCollection(mongoRSDB, MongoCollectionFunc(modelMongoCollection), opCode)
+	collection := SetMongoCollection(mongoRSDB, MongoCollectionFunc(modelMongoCollection))
 	indexName, err := CreateManyIndexMaxTime(ctxIndex, collection, models)
 	if err != nil {
 		return []string{}, fmt.Errorf("CreateManyIndexMaxTime - %w", err)
@@ -126,14 +128,14 @@ func ExistsCollectionAndCreateManyIndexMaxTime(existsCollectionTimeout time.Dura
 	return indexName, nil
 }
 
-func ExistsData(ctx context.Context, collection *mongo.Collection, condition bson.D) (bool, error) {
+func ExistsData(ctx context.Context, collection *mongo.Collection, filter interface{}) (bool, error) {
 	var cancelCtx context.CancelFunc
 	if ctx == nil {
 		ctx, cancelCtx = context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancelCtx()
 	}
 
-	count, err := collection.CountDocuments(ctx, condition)
+	count, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return false, fmt.Errorf("collection.CountDocuments - %w", err)
 	}
@@ -145,7 +147,7 @@ func ExistsData(ctx context.Context, collection *mongo.Collection, condition bso
 	return true, nil
 }
 
-func ReplaceOne(ctx context.Context, collection *mongo.Collection, filter bson.M, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
+func ReplaceOne(ctx context.Context, collection *mongo.Collection, filter, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
 	var cancelCtx context.CancelFunc
 	if ctx == nil {
 		ctx, cancelCtx = context.WithTimeout(context.Background(), 30*time.Second)
@@ -183,37 +185,39 @@ func BulkWriteOrderedFalse(ctx context.Context, collection *mongo.Collection, mo
 	return collection.BulkWrite(ctx, models, opts)
 }
 
-func FindAndDecode(findTimeout time.Duration, cursorTimeout time.Duration, result interface{},
-	mongoRS *mongo.Client, model MongoDatabaseAndCollection, opCode string, filter interface{},
-	opts ...*options.FindOptions) error {
-	ctx, cancelCtx := context.WithTimeout(context.Background(), findTimeout)
-	defer cancelCtx()
+func FindAndDecode(ctx context.Context, result interface{}, mongoRS *mongo.Client,
+	model MongoDatabaseAndCollection, filter interface{}, opts ...*options.FindOptions) error {
+	var cancelCtx context.CancelFunc
+	if ctx == nil {
+		ctx, cancelCtx = context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancelCtx()
+	}
 
 	mongoRSDB := SetMongoDatabase(mongoRS, model)
-	collection := SetMongoCollection(mongoRSDB, model, opCode)
+	collection := SetMongoCollection(mongoRSDB, model)
 
 	cursor, err := collection.Find(ctx, filter, opts...)
 	if err != nil {
-		return fmt.Errorf(tools.ErrorFormatFind, model.GetCollectionName(opCode), filter, err)
+		return fmt.Errorf(tools.ErrorFormatFind, model.GetCollectionName(), filter, err)
 	}
 
-	ctxCursor, cancelCtxCursor := context.WithTimeout(context.Background(), cursorTimeout)
-	defer cancelCtxCursor()
-
-	if err := CursorDecode(ctxCursor, result, cursor); err != nil {
-		return fmt.Errorf(tools.ErrorFormatCursorDecode, model.GetCollectionName(opCode), filter, err)
+	if err := CursorDecode(ctx, result, cursor); err != nil {
+		return fmt.Errorf(tools.ErrorFormatCursorDecode, model.GetCollectionName(), filter, err)
 	}
 
 	return nil
 }
 
-func AggregateAndDecode(aggregateTimeout time.Duration, cursorTimeout time.Duration, result interface{},
-	mongoRS *mongo.Client, model MongoDatabaseAndCollection, opCode string, pipeline bson.A, opts ...*options.AggregateOptions) error {
-	ctx, cancelCtx := context.WithTimeout(context.Background(), aggregateTimeout)
-	defer cancelCtx()
+func AggregateAndDecode(ctx context.Context, result interface{}, mongoRS *mongo.Client, model MongoDatabaseAndCollection,
+	pipeline bson.A, opts ...*options.AggregateOptions) error {
+	var cancelCtx context.CancelFunc
+	if ctx == nil {
+		ctx, cancelCtx = context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancelCtx()
+	}
 
 	mongoRSDB := SetMongoDatabase(mongoRS, model)
-	collection := SetMongoCollection(mongoRSDB, model, opCode)
+	collection := SetMongoCollection(mongoRSDB, model)
 
 	if opts == nil {
 		opts = append(opts, options.Aggregate().SetAllowDiskUse(true))
@@ -221,14 +225,11 @@ func AggregateAndDecode(aggregateTimeout time.Duration, cursorTimeout time.Durat
 
 	cursor, err := collection.Aggregate(ctx, pipeline, opts...)
 	if err != nil {
-		return fmt.Errorf(tools.ErrorFormatAggregate, model.GetCollectionName(opCode), pipeline, err)
+		return fmt.Errorf(tools.ErrorFormatAggregate, model.GetCollectionName(), pipeline, err)
 	}
 
-	ctxCursor, cancelCtxCursor := context.WithTimeout(context.Background(), cursorTimeout)
-	defer cancelCtxCursor()
-
-	if err := CursorDecode(ctxCursor, result, cursor); err != nil {
-		return fmt.Errorf(tools.ErrorFormatAggregateCursorDecode, model.GetCollectionName(opCode), pipeline, err)
+	if err := CursorDecode(ctx, result, cursor); err != nil {
+		return fmt.Errorf(tools.ErrorFormatAggregateCursorDecode, model.GetCollectionName(), pipeline, err)
 	}
 
 	return nil

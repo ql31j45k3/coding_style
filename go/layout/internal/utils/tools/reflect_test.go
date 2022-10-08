@@ -8,8 +8,6 @@ import (
 )
 
 type TestGames struct {
-	_ struct{}
-
 	CodeInt   int
 	CodeInt8  int8
 	CodeInt16 int16
@@ -35,16 +33,12 @@ type TestGames struct {
 }
 
 type TestGameBrand struct {
-	_ struct{}
-
 	CodeStr      string
 	CodeStrSlice []string
 	CodeStrArray [3]string
 }
 
 type Games struct {
-	_ struct{}
-
 	CodeInt   int
 	CodeInt8  int8
 	CodeInt16 int16
@@ -64,8 +58,6 @@ type Games struct {
 
 	CodeType      string
 	CodeGameBrand []struct {
-		_ struct{}
-
 		CodeStr      string
 		CodeStrSlice []string
 		CodeStrArray [3]string

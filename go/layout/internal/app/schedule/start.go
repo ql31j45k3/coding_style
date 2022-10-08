@@ -181,7 +181,6 @@ func buildContainer() (*dig.Container, error) {
 }
 
 type containerProvide struct {
-	_ struct{}
 }
 
 func (cp *containerProvide) gormM() (*gorm.DB, error) {

@@ -93,15 +93,11 @@ func notifyJobFinish(ctxStopNotify context.Context, name string, jp *jobPrecondi
 // 在流程上 run func 是順序執行 不會有同時呼叫 register 相關函數
 // run func 執行完，才會呼叫 start 另開 go 做讀資料邏輯，故流程上不會有同時搶佔狀況
 type jobPreconditions struct {
-	_ struct{}
-
 	listenJob         []<-chan jobNotify
 	jobName2NotifyJob map[string][]chan<- jobNotify
 }
 
 type jobNotify struct {
-	_ struct{}
-
 	name        string
 	executionAt int64
 }
@@ -185,7 +181,6 @@ const (
 )
 
 type jobOrder struct {
-	_ struct{}
 }
 
 func (j *jobOrder) addJob(ctxStopNotify context.Context, c *cron.Cron, jp *jobPreconditions, container *dig.Container) error {
@@ -218,7 +213,6 @@ func (j *jobOrder) getFunc(ctxStopNotify context.Context, container *dig.Contain
 }
 
 type jobTransaction struct {
-	_ struct{}
 }
 
 func (j *jobTransaction) addJob(ctxStopNotify context.Context, c *cron.Cron, jp *jobPreconditions, container *dig.Container) error {

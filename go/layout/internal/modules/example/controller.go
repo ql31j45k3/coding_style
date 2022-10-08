@@ -35,8 +35,6 @@ func RegisterRouter(ctxStopNotify context.Context, addStopJob func(f func()), co
 }
 
 type exampleRouter struct {
-	_ struct{}
-
 	ctxStopNotify context.Context
 
 	task *taskMap

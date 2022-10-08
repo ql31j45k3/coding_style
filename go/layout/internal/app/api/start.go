@@ -135,8 +135,6 @@ func Start() {
 // stopJob 為避免其它 package 需 import 此包 package，故用傳遞 func 方式提供功能給其它模組使用，
 // 依賴關係都是 start.go 單向 import 其它 package 包功能
 type stopJob struct {
-	_ struct{}
-
 	sync.Mutex
 	stopFunctions []func()
 }
@@ -194,7 +192,6 @@ func buildContainer() (*dig.Container, error) {
 }
 
 type containerProvide struct {
-	_ struct{}
 }
 
 // gin 建立 gin Engine，設定 middleware
