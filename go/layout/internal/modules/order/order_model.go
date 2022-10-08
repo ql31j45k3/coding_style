@@ -68,7 +68,7 @@ func (orderData) GetDatabase() string {
 	return tools.MongoDBTestAPI
 }
 
-func (orderData) GetCollectionName(_ string) string {
+func (orderData) GetCollectionName() string {
 	return MongoOrder
 }
 

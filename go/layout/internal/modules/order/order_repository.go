@@ -46,27 +46,30 @@ func (om *orderMongo) GetOrderID(mongoRS *mongo.Client, account string) (orderDa
 
 	result := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, result)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, result, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, result)
 
 	condition := bson.M{
 		"account": account,
 	}
 
 	if err := collection.FindOne(ctx, condition).Decode(&result); err != nil {
-		return result, fmt.Errorf(tools.ErrorFormatFindOne, result.GetCollectionName(""), condition, err)
+		return result, fmt.Errorf(tools.ErrorFormatFindOne, result.GetCollectionName(), condition, err)
 	}
 
 	return result, nil
 }
 
 func (om *orderMongo) GetOrders(mongoRS *mongo.Client, account string) ([]orderData, error) {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	defer cancelCtx()
+
 	condition := bson.M{
 		"account": account,
 	}
 
 	model := orderData{}
 	var result []orderData
-	if err := utilsDriver.FindAndDecode(configs.Mongo.GetTimeout(), configs.Mongo.GetTimeout(), &result, mongoRS, model, "", condition); err != nil {
+	if err := utilsDriver.FindAndDecode(ctx, &result, mongoRS, model, condition); err != nil {
 		return result, fmt.Errorf("utilsDriver.FindAndDecode - %w", err)
 	}
 
@@ -74,6 +77,9 @@ func (om *orderMongo) GetOrders(mongoRS *mongo.Client, account string) ([]orderD
 }
 
 func (om *orderMongo) GetOrderAggregate(mongoRS *mongo.Client, account string) ([]orderData, error) {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), configs.Mongo.GetTimeout())
+	defer cancelCtx()
+
 	match := bson.M{
 		"account": account,
 	}
@@ -92,7 +98,7 @@ func (om *orderMongo) GetOrderAggregate(mongoRS *mongo.Client, account string) (
 
 	model := orderData{}
 	var result []orderData
-	if err := utilsDriver.AggregateAndDecode(configs.Mongo.GetTimeout(), configs.Mongo.GetTimeout(), &result, mongoRS, model, "", pipeline); err != nil {
+	if err := utilsDriver.AggregateAndDecode(ctx, &result, mongoRS, model, pipeline); err != nil {
 		return result, fmt.Errorf("utilsDriver.AggregateAndDecode - %w", err)
 	}
 
@@ -109,10 +115,10 @@ func (om *orderMongo) ReplaceOne(mongoRS *mongo.Client, account string, oldData 
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	if _, err := utilsDriver.ReplaceOne(ctx, collection, condition, oldData); err != nil {
-		return fmt.Errorf(tools.ErrorFormatReplaceOne, model.GetCollectionName(""), condition, err)
+		return fmt.Errorf(tools.ErrorFormatReplaceOne, model.GetCollectionName(), condition, err)
 	}
 
 	return nil
@@ -124,7 +130,7 @@ func (om *orderMongo) ExistsOrder(mongoRS *mongo.Client, account string) (bool, 
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	condition := bson.D{
 		{Key: "account", Value: account},
@@ -132,7 +138,7 @@ func (om *orderMongo) ExistsOrder(mongoRS *mongo.Client, account string) (bool, 
 
 	exist, err := utilsDriver.ExistsData(ctx, collection, condition)
 	if err != nil {
-		return false, fmt.Errorf(tools.ErrorFormatExistsData, model.GetCollectionName(""), condition, err)
+		return false, fmt.Errorf(tools.ErrorFormatExistsData, model.GetCollectionName(), condition, err)
 	}
 
 	return exist, nil
@@ -144,7 +150,7 @@ func (om *orderMongo) UpdateOrder(mongoRS *mongo.Client, account string) error {
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	condition := bson.M{
 		"account": account,
@@ -157,7 +163,7 @@ func (om *orderMongo) UpdateOrder(mongoRS *mongo.Client, account string) error {
 	}
 
 	if _, err := collection.UpdateOne(ctx, condition, update); err != nil {
-		return fmt.Errorf(tools.ErrorFormatUpdateOne, model.GetCollectionName(""), condition, update, err)
+		return fmt.Errorf(tools.ErrorFormatUpdateOne, model.GetCollectionName(), condition, update, err)
 	}
 
 	return nil
@@ -169,7 +175,7 @@ func (om *orderMongo) UpdateManyOrder(mongoRS *mongo.Client, account string) err
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	condition := bson.M{
 		"account": account,
@@ -182,7 +188,7 @@ func (om *orderMongo) UpdateManyOrder(mongoRS *mongo.Client, account string) err
 	}
 
 	if _, err := collection.UpdateMany(ctx, condition, update); err != nil {
-		return fmt.Errorf(tools.ErrorFormatUpdateMany, model.GetCollectionName(""), condition, update, err)
+		return fmt.Errorf(tools.ErrorFormatUpdateMany, model.GetCollectionName(), condition, update, err)
 	}
 
 	return nil
@@ -194,14 +200,14 @@ func (om *orderMongo) DeleteOneOrder(mongoRS *mongo.Client, account string) erro
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	condition := bson.M{
 		"account": account,
 	}
 
 	if _, err := collection.DeleteOne(ctx, condition); err != nil {
-		return fmt.Errorf(tools.ErrorFormatDeleteOne, model.GetCollectionName(""), condition, err)
+		return fmt.Errorf(tools.ErrorFormatDeleteOne, model.GetCollectionName(), condition, err)
 	}
 
 	return nil
@@ -217,7 +223,7 @@ func (om *orderMongo) BulkInsertManyOrder(mongoRS *mongo.Client, account2Order m
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	writeModels := make([]mongo.WriteModel, 0)
 
@@ -227,7 +233,7 @@ func (om *orderMongo) BulkInsertManyOrder(mongoRS *mongo.Client, account2Order m
 	}
 
 	if _, err := utilsDriver.BulkWriteOrderedFalse(ctx, collection, writeModels); err != nil {
-		return fmt.Errorf(tools.ErrorFormatBulkWrite, model.GetCollectionName(""), err)
+		return fmt.Errorf(tools.ErrorFormatBulkWrite, model.GetCollectionName(), err)
 	}
 
 	return nil
@@ -239,11 +245,11 @@ func (om *orderMongo) InsertOneOrder(mongoRS *mongo.Client, data order) error {
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	_, err := collection.InsertOne(ctx, data)
 	if err != nil {
-		return fmt.Errorf(tools.ErrorFormatInsertOne, model.GetCollectionName(""), err)
+		return fmt.Errorf(tools.ErrorFormatInsertOne, model.GetCollectionName(), err)
 	}
 
 	return nil
@@ -259,7 +265,7 @@ func (om *orderMongo) InsertManyOpAgentSettlementMember(mongoRS *mongo.Client, d
 
 	model := orderData{}
 	mongoRSDB := utilsDriver.SetMongoDatabase(mongoRS, model)
-	collection := utilsDriver.SetMongoCollection(mongoRSDB, model, "")
+	collection := utilsDriver.SetMongoCollection(mongoRSDB, model)
 
 	var tempData []interface{}
 
@@ -268,7 +274,7 @@ func (om *orderMongo) InsertManyOpAgentSettlementMember(mongoRS *mongo.Client, d
 	}
 
 	if _, err := utilsDriver.InsertManyOrderedFalse(ctx, collection, tempData); err != nil {
-		return fmt.Errorf(tools.ErrorFormatInsertMany, model.GetCollectionName(""), err)
+		return fmt.Errorf(tools.ErrorFormatInsertMany, model.GetCollectionName(), err)
 	}
 
 	return nil
