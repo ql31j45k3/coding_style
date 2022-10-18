@@ -48,6 +48,11 @@ func (sr *studentRouter) create(c *gin.Context) {
 
 	rowID, err := sr.studentUseCase.Create(student)
 	if err != nil {
+		if s, ok := response.FromError(err); ok {
+			response.NewReturnError(c, http.StatusBadRequest, s.Code(), err)
+			return
+		}
+
 		response.IsErrRecordNotFound(c, err)
 		return
 	}

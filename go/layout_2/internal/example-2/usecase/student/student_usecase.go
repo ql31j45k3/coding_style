@@ -2,6 +2,7 @@ package student
 
 import (
 	"layout_2/internal/domain/student"
+	"layout_2/internal/utils"
 )
 
 type studentUseCase struct {
@@ -14,8 +15,12 @@ func NewStudentUseCase(studentRepo student.StudentRepository) student.StudentUse
 	}
 }
 
-func (suc *studentUseCase) Create(student student.Student) (uint, error) {
-	return suc.studentRepo.Create(student)
+func (suc *studentUseCase) Create(s student.Student) (uint, error) {
+	if utils.IsEmpty(s.NickName) {
+		return 0, student.ErrNickNameIsEmpty
+	}
+
+	return suc.studentRepo.Create(s)
 }
 
 func (suc *studentUseCase) UpdateID(cond student.StudentCond, student student.Student) error {
