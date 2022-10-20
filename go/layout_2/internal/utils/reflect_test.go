@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -162,6 +164,9 @@ func TestConvSourceToData(t *testing.T) {
 				assert.NoError(t, err, "ConvSourceToData error = %v", err)
 				return
 			}
+
+			// 注意: 可用 Dump 打印詳細的 go 數據結構
+			spew.Dump(sourData, resultData)
 
 			assert.Equal(t, fmt.Sprintf("%v", sourData), fmt.Sprintf("%v", resultData))
 		})
