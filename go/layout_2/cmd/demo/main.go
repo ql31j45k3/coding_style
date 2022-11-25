@@ -3,16 +3,15 @@ package main
 import (
 	"context"
 	"layout_2/configs"
-	studentRouter "layout_2/internal/example-1/student/delivery/http"
-	studentRepo "layout_2/internal/example-1/student/repository"
-	studentUseCase "layout_2/internal/example-1/student/usecase"
-	deliveryHttp "layout_2/internal/example-2/delivery/http/student"
-	"layout_2/internal/example-2/repository/student"
-	student2 "layout_2/internal/example-2/usecase/student"
+	deliveryHttp1 "layout_2/internal/example-1"
+	deliveryHttp "layout_2/internal/example-2/delivery/http"
+	"layout_2/internal/libs/container"
+	"layout_2/internal/libs/mongodb"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"fmt"
 	"layout_2/internal/libs/logs"
-	"layout_2/internal/libs/mysql"
 	"layout_2/internal/libs/response"
 	"net/http"
 	"os"
@@ -20,11 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"go.uber.org/dig"
-	"gorm.io/gorm"
-
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -41,38 +37,31 @@ func main() {
 		"app": fmt.Sprintf("%+v", configs.App),
 	}).Debug("check configs app value")
 
-	container, err := buildContainer()
-	if err != nil {
+	container.Init()
+
+	if err := container.ProvideInfra(); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("buildContainer")
+		}).Error("container.ProvideInfra")
 		return
 	}
 
-	// 調用其他函式，函式參數容器會依照 Provide 提供後自行匹配
-
-	// example-1
-	if err := container.Invoke(func(cond studentRouter.StudentHandlerCond) {
-		studentRouter.RegisterRouter(cond)
-	}); err != nil {
+	if err := deliveryHttp1.Init(); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("studentRouter")
+		}).Error("deliveryHttp1.Init")
 		return
 	}
 
-	// example-2
-	if err := container.Invoke(func(cond deliveryHttp.StudentHandlerCond) {
-		deliveryHttp.RegisterRouter(cond)
-	}); err != nil {
+	if err := deliveryHttp.Init(); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("studentRouter")
+		}).Error("deliveryHttp.Init")
 		return
 	}
 
 	// runGin
-	if err := container.Invoke(func(r *gin.Engine) {
+	if err := container.Get().Invoke(func(r *gin.Engine, mongoClient *mongo.Client) {
 		if err := response.RegisterValidator(); err != nil {
 			log.WithFields(log.Fields{
 				"err": err,
@@ -80,7 +69,7 @@ func main() {
 			return
 		}
 
-		runGin(r)
+		runGin(r, mongoClient)
 	}); err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
@@ -89,56 +78,41 @@ func main() {
 	}
 }
 
-// buildContainer 建立 DI 容器，提供各個函式的 input 參數
-func buildContainer() (*dig.Container, error) {
-	container := dig.New()
-	provideFunc := containerProvide{}
+func runGin(r *gin.Engine, mongoClient *mongo.Client) {
+	srv := newGin(r)
 
-	if err := container.Provide(provideFunc.gin); err != nil {
-		return nil, fmt.Errorf("container.Provide(provideFunc.gin), err: %w", err)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	shutdownTimeout := 10 * time.Second
+	ctx, cancelCtx := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancelCtx()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("srv.Shutdown")
+		return
 	}
 
-	if err := container.Provide(provideFunc.mysqlMaster, dig.Name("dbM")); err != nil {
-		return nil, fmt.Errorf("container.Provide(provideFunc.mysqlMaster), err: %w", err)
+	ctxMongo, cancelCtxMongo := context.WithTimeout(context.Background(), configs.App.GetMongoTimeout())
+	defer cancelCtxMongo()
+	if err := mongodb.Disconnect(ctxMongo, mongoClient); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("mongodb.Disconnect")
+
+		// 故意不中斷，後續流程有其他功能需做關閉動作
 	}
 
-	// example-1
-	if err := container.Provide(studentRepo.NewStudentRepository); err != nil {
-		return nil, fmt.Errorf("container.Provide(studentRepo.NewStudentRepository), err: %w", err)
-	}
-
-	if err := container.Provide(studentUseCase.NewStudentUseCase); err != nil {
-		return nil, fmt.Errorf("container.Provide(studentUseCase.NewStudentUseCase), err: %w", err)
-	}
-
-	// example-2
-	if err := container.Provide(student.NewStudentRepository, dig.Name("NewStudentRepository2")); err != nil {
-		return nil, fmt.Errorf("container.Provide(repository.NewStudentRepository), err: %w", err)
-	}
-
-	if err := container.Provide(student2.NewStudentUseCase, dig.Name("NewStudentUseCase2")); err != nil {
-		return nil, fmt.Errorf("container.Provide(usecase.NewStudentUseCase), err: %w", err)
-	}
-
-	return container, nil
+	timeout := shutdownTimeout / time.Second
+	log.WithFields(log.Fields{
+		"shutdownTimeout": fmt.Sprintf("%ds", timeout),
+	}).Info("Server exiting")
 }
 
-type containerProvide struct {
-}
-
-// gin 建立 gin Engine，設定 middleware
-func (cp *containerProvide) gin() *gin.Engine {
-	return gin.Default()
-}
-
-// gorm 建立 gorm.DB 設定，初始化 session 並無實際連線
-func (cp *containerProvide) mysqlMaster() (*gorm.DB, error) {
-	return mysql.NewMysql(configs.App.GetDBUsername(), configs.App.GetDBPassword(),
-		configs.App.GetDBHost(), configs.App.GetDBPort(), configs.App.GetDBName(),
-		configs.App.GetGormLogMode())
-}
-
-func runGin(r *gin.Engine) {
+func newGin(r *gin.Engine) *http.Server {
 	gin.SetMode(configs.App.GetGinMode())
 
 	srv := &http.Server{
@@ -164,23 +138,5 @@ func runGin(r *gin.Engine) {
 		}).Info("srv.ListenAndServe")
 	}(srv)
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	shutdownTimeout := 10 * time.Second
-	ctx, cancelCtx := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancelCtx()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Error("srv.Shutdown")
-		return
-	}
-
-	timeout := shutdownTimeout / time.Second
-	log.WithFields(log.Fields{
-		"shutdownTimeout": fmt.Sprintf("%ds", timeout),
-	}).Info("Server exiting")
+	return srv
 }
