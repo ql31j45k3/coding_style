@@ -3,6 +3,7 @@ package configs
 import (
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -25,6 +26,24 @@ const (
 	dbMasterUsername = "db.master.username"
 	dbMasterPassword = "db.master.password"
 	dbMasterName     = "db.master.name"
+
+	mongoTimeout = "mongo.timeout"
+
+	mongoAuthMechanism = "mongo.authMechanism"
+	mongoReplicaSet    = "mongo.replicaSet"
+
+	mongoHosts    = "mongo.hosts"
+	mongoUsername = "mongo.username"
+	mongoPassword = "mongo.password"
+
+	mongoPoolDebug           = "mongo.pool.debug"
+	mongoPoolMinSize         = "mongo.pool.minSize"
+	mongoPoolMaxSize         = "mongo.pool.maxSize"
+	mongoPoolMaxConnIdleTime = "mongo.pool.maxConnIdleTime"
+
+	redisHosts    = "redis.hosts"
+	redisPassword = "redis.password"
+	redisPoolSize = "redis.poolSize"
 )
 
 func newConfigApp() *configApp {
@@ -35,6 +54,14 @@ func newConfigApp() *configApp {
 	viper.SetDefault(envServerPort, "8080")
 
 	viper.SetDefault(dbGormLogMode, "warn")
+
+	viper.SetDefault(mongoTimeout, time.Duration(300))
+
+	viper.SetDefault(mongoPoolMinSize, 10)
+	viper.SetDefault(mongoPoolMaxSize, 100)
+	viper.SetDefault(mongoPoolMaxConnIdleTime, time.Duration(300))
+
+	viper.SetDefault(redisPoolSize, 100)
 
 	return &configApp{
 		logLevel: viper.GetString(envLogLevel),
@@ -50,6 +77,24 @@ func newConfigApp() *configApp {
 		dbUsername: viper.GetString(dbMasterUsername),
 		dbPassword: viper.GetString(dbMasterPassword),
 		dbName:     viper.GetString(dbMasterName),
+
+		mongoTimeout: viper.GetDuration(mongoTimeout) * time.Second,
+
+		mongoAuthMechanism: viper.GetString(mongoAuthMechanism),
+		mongoReplicaSet:    viper.GetString(mongoReplicaSet),
+
+		mongoHosts:    viper.GetStringSlice(mongoHosts),
+		mongoUsername: viper.GetString(mongoUsername),
+		mongoPassword: viper.GetString(mongoPassword),
+
+		mongoDebug:           viper.GetBool(mongoPoolDebug),
+		mongoMinPoolSize:     viper.GetUint64(mongoPoolMinSize),
+		mongoMaxPoolSize:     viper.GetUint64(mongoPoolMaxSize),
+		mongoMaxConnIdleTime: viper.GetDuration(mongoPoolMaxConnIdleTime) * time.Second,
+
+		redisHosts:    viper.GetStringSlice(redisHosts),
+		redisPassword: viper.GetString(redisPassword),
+		redisPoolSize: viper.GetInt(redisPoolSize),
 	}
 }
 
@@ -69,6 +114,24 @@ type configApp struct {
 	dbUsername string
 	dbPassword string
 	dbName     string
+
+	mongoTimeout time.Duration
+
+	mongoAuthMechanism string
+	mongoReplicaSet    string
+
+	mongoHosts    []string
+	mongoUsername string
+	mongoPassword string
+
+	mongoDebug           bool
+	mongoMinPoolSize     uint64
+	mongoMaxPoolSize     uint64
+	mongoMaxConnIdleTime time.Duration
+
+	redisHosts    []string
+	redisPassword string
+	redisPoolSize int
 }
 
 func (c *configApp) reload() {
@@ -140,4 +203,61 @@ func (c *configApp) GetDBPassword() string {
 
 func (c *configApp) GetDBName() string {
 	return c.dbName
+}
+
+func (c *configApp) GetMongoTimeout() time.Duration {
+	return c.mongoTimeout
+}
+
+func (c *configApp) GetMongoAuthMechanism() string {
+	if c.mongoAuthMechanism == "Direct" || c.mongoAuthMechanism == "PLAIN" || c.mongoAuthMechanism == "SCRAM" {
+		return c.mongoAuthMechanism
+	}
+
+	c.mongoAuthMechanism = "Direct"
+	return c.mongoAuthMechanism
+}
+
+func (c *configApp) GetMongoReplicaSet() string {
+	return c.mongoReplicaSet
+}
+
+func (c *configApp) GetMongoHosts() []string {
+	return c.mongoHosts
+}
+
+func (c *configApp) GetMongoUsername() string {
+	return c.mongoUsername
+}
+
+func (c *configApp) GetMongoPassword() string {
+	return c.mongoPassword
+}
+
+func (c *configApp) GetMongoDebug() bool {
+	return c.mongoDebug
+}
+
+func (c *configApp) GetMongoMinPoolSize() uint64 {
+	return c.mongoMinPoolSize
+}
+
+func (c *configApp) GetMongoMaxPoolSize() uint64 {
+	return c.mongoMaxPoolSize
+}
+
+func (c *configApp) GetMongoMaxConnIdleTime() time.Duration {
+	return c.mongoMaxConnIdleTime
+}
+
+func (c *configApp) GetRedisHosts() []string {
+	return c.redisHosts
+}
+
+func (c *configApp) GetRedisPassword() string {
+	return c.redisPassword
+}
+
+func (c *configApp) GetRedisPoolSize() int {
+	return c.redisPoolSize
 }

@@ -15,3 +15,28 @@ db:
     username: root
     password: 123456
     name: demo_2
+
+mongo:
+  timeout: 300
+  hosts:
+    - "127.0.0.1:27017"
+  authMechanism: "Direct"
+  username:
+  password:
+  replicaSet:
+  pool:
+    debug: false
+    minSize: 2
+    maxSize: 25
+    maxConnIdleTime: 300
+
+redis:
+  hosts:
+    - "127.0.0.1:6371"
+    - "127.0.0.1:6372"
+    - "127.0.0.1:6373"
+    - "127.0.0.1:6374"
+    - "127.0.0.1:6375"
+    - "127.0.0.1:6376"
+  password:
+  poolSize: 1000
