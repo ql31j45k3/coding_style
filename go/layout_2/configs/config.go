@@ -32,6 +32,10 @@ const (
 	dbMasterPassword = "db.master.password"
 	dbMasterName     = "db.master.name"
 
+	dbMasterMaxIdleConns    = "db.master.maxIdleConns"
+	dbMasterMaxOpenConns    = "db.master.maxOpenConns"
+	dbMasterConnMaxLifetime = "db.master.connMaxLifetime"
+
 	mongoTimeout = "mongo.timeout"
 
 	mongoAuthMechanism = "mongo.authMechanism"
@@ -87,6 +91,10 @@ func newConfigApp() *configApp {
 		dbPassword: viper.GetString(dbMasterPassword),
 		dbName:     viper.GetString(dbMasterName),
 
+		maxIdleConns:    viper.GetInt(dbMasterMaxIdleConns),
+		maxOpenConns:    viper.GetInt(dbMasterMaxOpenConns),
+		connMaxLifetime: viper.GetDuration(dbMasterConnMaxLifetime),
+
 		mongoTimeout: viper.GetDuration(mongoTimeout) * time.Second,
 
 		mongoAuthMechanism: viper.GetString(mongoAuthMechanism),
@@ -128,6 +136,10 @@ type configApp struct {
 	dbUsername string
 	dbPassword string
 	dbName     string
+
+	maxIdleConns    int
+	maxOpenConns    int
+	connMaxLifetime time.Duration
 
 	mongoTimeout time.Duration
 
@@ -229,6 +241,18 @@ func (c *configApp) GetDBPassword() string {
 
 func (c *configApp) GetDBName() string {
 	return c.dbName
+}
+
+func (c *configApp) GetMaxIdleConns() int {
+	return c.maxIdleConns
+}
+
+func (c *configApp) GetMaxOpenConns() int {
+	return c.maxOpenConns
+}
+
+func (c *configApp) GetConnMaxLifetime() time.Duration {
+	return c.connMaxLifetime * time.Second
 }
 
 func (c *configApp) GetMongoTimeout() time.Duration {

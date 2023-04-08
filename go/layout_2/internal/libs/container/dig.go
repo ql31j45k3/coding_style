@@ -69,7 +69,8 @@ func (cp *containerProvide) gin() *gin.Engine {
 func (cp *containerProvide) mysqlMaster() (*gorm.DB, error) {
 	return mysql.NewMysql(configs.App.GetDBUsername(), configs.App.GetDBPassword(),
 		configs.App.GetDBHost(), configs.App.GetDBPort(), configs.App.GetDBName(),
-		configs.App.GetGormLogMode())
+		configs.App.GetGormLogMode(),
+		configs.App.GetMaxIdleConns(), configs.App.GetMaxOpenConns(), configs.App.GetConnMaxLifetime())
 }
 
 func (cp *containerProvide) mongo() (*mongo.Client, error) {

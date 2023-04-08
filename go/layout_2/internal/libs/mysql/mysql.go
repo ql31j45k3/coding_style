@@ -13,7 +13,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func NewMysql(username, password, host, port, dbname string, logMode logger.LogLevel) (*gorm.DB, error) {
+func NewMysql(username, password, host, port, dbname string, logMode logger.LogLevel,
+	maxIdleConns, maxOpenConns int, connMaxLifetime time.Duration) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		username, password, host, port, dbname)
 
@@ -36,11 +37,11 @@ func NewMysql(username, password, host, port, dbname string, logMode logger.LogL
 	}
 
 	// 最大閒置連線數
-	sqlDB.SetMaxIdleConns(50)
+	sqlDB.SetMaxIdleConns(maxIdleConns)
 	// 最大連線數
-	sqlDB.SetMaxOpenConns(300)
+	sqlDB.SetMaxOpenConns(maxOpenConns)
 	// 每條連線的存活時間
-	sqlDB.SetConnMaxLifetime(300 * time.Second)
+	sqlDB.SetConnMaxLifetime(connMaxLifetime)
 
 	return db, nil
 }
