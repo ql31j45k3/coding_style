@@ -13,11 +13,16 @@ import (
 )
 
 const (
+	envServiceName = "env.serviceName"
+
 	envLogLevel = "env.log.level"
 	envLogPath  = "env.log.path"
 
 	envDebug      = "env.debug"
 	envServerPort = "env.server.port"
+
+	pyroscopeIsRunStart = "pyroscope.isRunStart"
+	pyroscopeURL        = "pyroscope.url"
 
 	dbGormLogMode = "db.gorm.logMode"
 
@@ -64,11 +69,16 @@ func newConfigApp() *configApp {
 	viper.SetDefault(redisPoolSize, 100)
 
 	return &configApp{
+		serviceName: viper.GetString(envServiceName),
+
 		logLevel: viper.GetString(envLogLevel),
 		logPath:  viper.GetString(envLogPath),
 
 		debug:      viper.GetBool(envDebug),
 		serverPort: ":" + viper.GetString(envServerPort),
+
+		pyroscopeIsRunStart: viper.GetBool(pyroscopeIsRunStart),
+		pyroscopeURL:        viper.GetString(pyroscopeURL),
 
 		gormLogMode: viper.GetString(dbGormLogMode),
 
@@ -101,11 +111,16 @@ func newConfigApp() *configApp {
 type configApp struct {
 	sync.RWMutex
 
+	serviceName string
+
 	logLevel string
 	logPath  string
 
 	debug      bool
 	serverPort string
+
+	pyroscopeIsRunStart bool
+	pyroscopeURL        string
 
 	gormLogMode string
 
@@ -141,6 +156,10 @@ func (c *configApp) reload() {
 	c.logLevel = viper.GetString(envLogLevel)
 }
 
+func (c *configApp) GetServiceName() string {
+	return c.serviceName
+}
+
 func (c *configApp) GetLogLevel() string {
 	c.RLock()
 	defer c.RUnlock()
@@ -166,6 +185,14 @@ func (c *configApp) GetGinMode() string {
 
 func (c *configApp) GetServerPort() string {
 	return c.serverPort
+}
+
+func (c *configApp) GetPyroscopeIsRunStart() bool {
+	return c.pyroscopeIsRunStart
+}
+
+func (c *configApp) GetPyroscopeURL() string {
+	return c.pyroscopeURL
 }
 
 func (c *configApp) GetGormLogMode() logger.LogLevel {

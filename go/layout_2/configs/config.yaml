@@ -1,10 +1,15 @@
 env:
+  serviceName: "layout_2"
   log:
     level: debug
     path: /Users/michael_kao/Documents/github/ql31j45k3/coding_style/go/layout_2/logs/demo_2_log
   debug: true
   server:
     port: 8080
+
+pyroscope:
+  isRunStart: true
+  url: "http://127.0.0.1:4040"
 
 db:
   gorm:

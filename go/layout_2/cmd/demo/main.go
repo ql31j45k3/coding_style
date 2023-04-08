@@ -33,6 +33,20 @@ func main() {
 	}
 	configs.SetReloadFunc(logs.ReloadSetLogLevel)
 
+	if configs.App.GetPyroscopeIsRunStart() {
+		_, err := profiler.Start(profiler.Config{
+			ApplicationName: configs.App.GetServiceName(),
+			ServerAddress:   configs.App.GetPyroscopeURL(),
+		})
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"err": err,
+			}).Error("profiler.Start fail")
+			return
+		}
+	}
+
 	log.WithFields(log.Fields{
 		"app": fmt.Sprintf("%+v", configs.App),
 	}).Debug("check configs app value")
