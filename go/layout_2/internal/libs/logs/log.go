@@ -26,6 +26,8 @@ func SetLogEnv() error {
 		return err
 	}
 
+	logAddHockHideData()
+
 	return nil
 }
 
@@ -66,4 +68,28 @@ func ReloadSetLogLevel() {
 	}
 
 	log.SetLevel(level)
+}
+
+func logAddHockHideData() {
+	h := &hideData{}
+	log.AddHook(h)
+}
+
+type hideData struct {
+}
+
+func (h *hideData) Levels() []log.Level {
+	return log.AllLevels
+}
+
+func (h *hideData) Fire(entry *log.Entry) error {
+	h.hideSecretKey(entry)
+	return nil
+}
+
+func (h *hideData) hideSecretKey(entry *log.Entry) {
+	data, ok := entry.Data["HideKey"].(string)
+	if ok && len(data) > 0 {
+		entry.Data["HideKey"] = "hide data is secret"
+	}
 }
