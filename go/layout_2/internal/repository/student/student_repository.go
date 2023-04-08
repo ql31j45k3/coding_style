@@ -27,29 +27,7 @@ func NewStudentRepository(cond StudentRepositoryCond) (repository.StudentReposit
 		db: cond.DB,
 	}
 
-	if err := result.createTable(); err != nil {
-		return nil, err
-	}
-
 	return result, nil
-}
-
-func (sr *studentRepository) createTable() error {
-	ctx, cancelCtx := context.WithTimeout(context.Background(), utils.Time30S)
-	defer cancelCtx()
-
-	if sr.db.WithContext(ctx).Migrator().HasTable(&entity.Student{}) {
-		return nil
-	}
-
-	err := sr.db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='學生表'").
-		WithContext(ctx).
-		AutoMigrate(&entity.Student{})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (sr *studentRepository) Create(student entity.Student) (uint, error) {
