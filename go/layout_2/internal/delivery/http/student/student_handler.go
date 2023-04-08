@@ -1,8 +1,10 @@
-package http
+package student
 
 import (
 	"fmt"
-	"layout_2/internal/domain/student"
+	"layout_2/internal/domain/entity"
+	"layout_2/internal/domain/usecase"
+	"layout_2/internal/domain/vo"
 	"layout_2/internal/libs/response"
 	"layout_2/internal/utils"
 	"net/http"
@@ -16,15 +18,15 @@ type StudentHandlerCond struct {
 
 	R *gin.Engine
 
-	StudentUseCase student.StudentUseCase
+	StudentUseCase usecase.StudentUseCase
 }
 
 func RegisterRouter(cond StudentHandlerCond) {
 	router := studentRouter{
-		studentUseCase: cond.StudentUseCase,
+		StudentHandlerCond: cond,
 	}
 
-	routerGroup := cond.R.Group("/v1/student")
+	routerGroup := cond.R.Group("/v2/student")
 	routerGroup.POST("", router.create)
 	routerGroup.PUT("/:id", router.updateID)
 	routerGroup.GET("/:id", router.getID)
@@ -32,7 +34,7 @@ func RegisterRouter(cond StudentHandlerCond) {
 }
 
 type studentRouter struct {
-	studentUseCase student.StudentUseCase
+	StudentHandlerCond
 }
 
 type responseStudentCreate struct {
@@ -40,13 +42,13 @@ type responseStudentCreate struct {
 }
 
 func (sr *studentRouter) create(c *gin.Context) {
-	var student student.Student
+	var student entity.Student
 	if err := response.BindJSON(c, &student); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
 	}
 
-	rowID, err := sr.studentUseCase.Create(student)
+	rowID, err := sr.StudentUseCase.Create(student)
 	if err != nil {
 		if s, ok := response.FromError(err); ok {
 			response.NewReturnError(c, http.StatusBadRequest, s.Code(), err)
@@ -65,19 +67,19 @@ func (sr *studentRouter) create(c *gin.Context) {
 }
 
 func (sr *studentRouter) updateID(c *gin.Context) {
-	cond := student.StudentCond{}
+	cond := vo.StudentCond{}
 	if err := cond.ParseID(c); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
 	}
 
-	var student student.Student
+	var student entity.Student
 	if err := response.BindJSON(c, &student); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
 	}
 
-	err := sr.studentUseCase.UpdateID(cond, student)
+	err := sr.StudentUseCase.UpdateID(cond, student)
 	if err != nil {
 		response.IsErrRecordNotFound(c, err)
 		return
@@ -94,7 +96,7 @@ type responseStudent struct {
 }
 
 func (sr *studentRouter) getID(c *gin.Context) {
-	cond := student.StudentCond{}
+	cond := vo.StudentCond{}
 	if err := cond.ParseID(c); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
@@ -102,7 +104,7 @@ func (sr *studentRouter) getID(c *gin.Context) {
 
 	var responseStudent responseStudent
 
-	student, err := sr.studentUseCase.GetID(cond)
+	student, err := sr.StudentUseCase.GetID(cond)
 	if err != nil {
 		response.IsErrRecordNotFound(c, err)
 		return
@@ -123,7 +125,7 @@ type responseStudentGet struct {
 }
 
 func (sr *studentRouter) get(c *gin.Context) {
-	cond := student.StudentCond{}
+	cond := vo.StudentCond{}
 	if err := cond.ParseGet(c); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
@@ -131,7 +133,7 @@ func (sr *studentRouter) get(c *gin.Context) {
 
 	var responseStudents []responseStudent
 
-	students, count, err := sr.studentUseCase.Get(cond)
+	students, count, err := sr.StudentUseCase.Get(cond)
 	if err != nil {
 		response.IsErrRecordNotFound(c, err)
 		return

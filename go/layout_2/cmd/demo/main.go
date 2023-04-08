@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"layout_2/configs"
-	deliveryHttp1 "layout_2/internal/example-1"
-	deliveryHttp "layout_2/internal/example-2/delivery/http"
+	deliveryHttp "layout_2/internal/delivery/http"
 	"layout_2/internal/libs/container"
 	"layout_2/internal/libs/mongodb"
 
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
 
 	"fmt"
 	"layout_2/internal/libs/logs"
@@ -57,13 +58,6 @@ func main() {
 		log.WithFields(log.Fields{
 			"err": err,
 		}).Error("container.ProvideInfra")
-		return
-	}
-
-	if err := deliveryHttp1.Init(); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Error("deliveryHttp1.Init")
 		return
 	}
 

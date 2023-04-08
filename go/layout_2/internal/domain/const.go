@@ -1,4 +1,4 @@
-package student
+package domain
 
 import "layout_2/internal/libs/response"
 

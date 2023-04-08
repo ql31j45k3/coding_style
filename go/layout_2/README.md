@@ -22,21 +22,13 @@
     │   └── domain： 存放所有層，會使用到的對象及方法，提供給 delivery、repository、usecase 呼叫，
     │   │               這樣所有的依賴關係，都是單向的連結 domain，各個實作邏輯不會有 import 關係，
     │   │               如 usecase 不會 import repository 取對象(model) 或是實作程式。
-    │   └── example-1： 依照職責拆分，商業邏輯模組，每個資料夾(student、article) 分類功能。
-    │       └── student
-    │           └── delivery： 該層將充當演示者。決定數據的呈現方式。
-    │               │          可以是 REST API、HTML 文件或 GRPC，無論交付類型如何。
-    │               │           該層也將處理來自用戶的輸入並將其發送到用例層。
-    │               └── http： gin router 註冊 API，包含處理 API request 參數取值與 userCase 回傳值到 response。
-    │           └── repository： 處理連線資料庫，實際 SQL 操作邏輯。
-    │           └── usecase： 處理核心業務邏輯處理，不能耦合 gin.Context 參數，
-    │                           須轉換內部使用 struct，後續可給 GRPC、WebSocket 等 delivery 複用邏輯。
-    │       └── article ...
-    │   └── example-2： 按層拆分，商業邏輯模組，每個資料夾(usecase、repository) 底下 student_usecase.go、article_usecase.go 分類功能。
-    │       └── delivery： 同上。
-    │           └── http： 同上。
-    │       └── repository： 同上。
-    │       └── usecase： 同上。
+    │   └── delivery： 該層將充當演示者。決定數據的呈現方式。
+    │       │          可以是 REST API、HTML 文件或 GRPC，無論交付類型如何。
+    │       │           該層也將處理來自用戶的輸入並將其發送到用例層。
+    │       └── http： gin router 註冊 API，包含處理 API request 參數取值與 userCase 回傳值到 response。
+    │   └── repository： 處理連線資料庫，實際 SQL 操作邏輯。
+    │   └── usecase： 處理核心業務邏輯處理，不能耦合 gin.Context 參數，
+    │                 須轉換內部使用 struct，後續可給 GRPC、WebSocket 等 delivery 複用邏輯。
     │   └── libs： 存放包裝好的組件。
     │       └── logs： log 相關參數設置 (level、path)，包含切割檔案邏輯。
     │       └── middleware： gin middleware 邏輯。
