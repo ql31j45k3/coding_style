@@ -1,2 +1,11 @@
+# mac
+.DS_Store
+
+# IntelliJ IDEA
+.idea
+
+# vscode IDE
+.vscode
+
 # log
 /logs
