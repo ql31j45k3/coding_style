@@ -43,7 +43,7 @@ type responseStudentCreate struct {
 
 func (sr *studentRouter) create(c *gin.Context) {
 	var student entity.Student
-	if err := response.BindJSON(c, &student); err != nil {
+	if err := response.ShouldBindJSON(c, &student); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
 	}
@@ -74,7 +74,7 @@ func (sr *studentRouter) updateID(c *gin.Context) {
 	}
 
 	var student entity.Student
-	if err := response.BindJSON(c, &student); err != nil {
+	if err := response.ShouldBindJSON(c, &student); err != nil {
 		response.NewReturnError(c, http.StatusBadRequest, response.HttpStatusBadRequest, err)
 		return
 	}
