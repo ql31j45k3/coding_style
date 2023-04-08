@@ -52,7 +52,6 @@ const (
 )
 
 func newConfigApp() *configApp {
-
 	viper.SetDefault(envLogLevel, "warn")
 	viper.SetDefault(envLogPath, "/var/log/layout_demo_log")
 
