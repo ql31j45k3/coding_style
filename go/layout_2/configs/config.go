@@ -13,11 +13,16 @@ import (
 )
 
 const (
+	envServiceName = "env.serviceName"
+
 	envLogLevel = "env.log.level"
 	envLogPath  = "env.log.path"
 
 	envDebug      = "env.debug"
 	envServerPort = "env.server.port"
+
+	pyroscopeIsRunStart = "pyroscope.isRunStart"
+	pyroscopeURL        = "pyroscope.url"
 
 	dbGormLogMode = "db.gorm.logMode"
 
@@ -26,6 +31,10 @@ const (
 	dbMasterUsername = "db.master.username"
 	dbMasterPassword = "db.master.password"
 	dbMasterName     = "db.master.name"
+
+	dbMasterMaxIdleConns    = "db.master.maxIdleConns"
+	dbMasterMaxOpenConns    = "db.master.maxOpenConns"
+	dbMasterConnMaxLifetime = "db.master.connMaxLifetime"
 
 	mongoTimeout = "mongo.timeout"
 
@@ -47,7 +56,6 @@ const (
 )
 
 func newConfigApp() *configApp {
-
 	viper.SetDefault(envLogLevel, "warn")
 	viper.SetDefault(envLogPath, "/var/log/layout_demo_log")
 
@@ -64,11 +72,16 @@ func newConfigApp() *configApp {
 	viper.SetDefault(redisPoolSize, 100)
 
 	return &configApp{
+		serviceName: viper.GetString(envServiceName),
+
 		logLevel: viper.GetString(envLogLevel),
 		logPath:  viper.GetString(envLogPath),
 
 		debug:      viper.GetBool(envDebug),
 		serverPort: ":" + viper.GetString(envServerPort),
+
+		pyroscopeIsRunStart: viper.GetBool(pyroscopeIsRunStart),
+		pyroscopeURL:        viper.GetString(pyroscopeURL),
 
 		gormLogMode: viper.GetString(dbGormLogMode),
 
@@ -77,6 +90,10 @@ func newConfigApp() *configApp {
 		dbUsername: viper.GetString(dbMasterUsername),
 		dbPassword: viper.GetString(dbMasterPassword),
 		dbName:     viper.GetString(dbMasterName),
+
+		maxIdleConns:    viper.GetInt(dbMasterMaxIdleConns),
+		maxOpenConns:    viper.GetInt(dbMasterMaxOpenConns),
+		connMaxLifetime: viper.GetDuration(dbMasterConnMaxLifetime),
 
 		mongoTimeout: viper.GetDuration(mongoTimeout) * time.Second,
 
@@ -101,11 +118,16 @@ func newConfigApp() *configApp {
 type configApp struct {
 	sync.RWMutex
 
+	serviceName string
+
 	logLevel string
 	logPath  string
 
 	debug      bool
 	serverPort string
+
+	pyroscopeIsRunStart bool
+	pyroscopeURL        string
 
 	gormLogMode string
 
@@ -114,6 +136,10 @@ type configApp struct {
 	dbUsername string
 	dbPassword string
 	dbName     string
+
+	maxIdleConns    int
+	maxOpenConns    int
+	connMaxLifetime time.Duration
 
 	mongoTimeout time.Duration
 
@@ -141,6 +167,10 @@ func (c *configApp) reload() {
 	c.logLevel = viper.GetString(envLogLevel)
 }
 
+func (c *configApp) GetServiceName() string {
+	return c.serviceName
+}
+
 func (c *configApp) GetLogLevel() string {
 	c.RLock()
 	defer c.RUnlock()
@@ -166,6 +196,14 @@ func (c *configApp) GetGinMode() string {
 
 func (c *configApp) GetServerPort() string {
 	return c.serverPort
+}
+
+func (c *configApp) GetPyroscopeIsRunStart() bool {
+	return c.pyroscopeIsRunStart
+}
+
+func (c *configApp) GetPyroscopeURL() string {
+	return c.pyroscopeURL
 }
 
 func (c *configApp) GetGormLogMode() logger.LogLevel {
@@ -203,6 +241,18 @@ func (c *configApp) GetDBPassword() string {
 
 func (c *configApp) GetDBName() string {
 	return c.dbName
+}
+
+func (c *configApp) GetMaxIdleConns() int {
+	return c.maxIdleConns
+}
+
+func (c *configApp) GetMaxOpenConns() int {
+	return c.maxOpenConns
+}
+
+func (c *configApp) GetConnMaxLifetime() time.Duration {
+	return c.connMaxLifetime * time.Second
 }
 
 func (c *configApp) GetMongoTimeout() time.Duration {

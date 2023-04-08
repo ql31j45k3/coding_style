@@ -32,6 +32,7 @@ func Start() error {
 	viper.SetConfigType("yaml")
 
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("./configs")
 	viper.AddConfigPath(viper.GetString("configPath"))
 
 	if err := viper.ReadInConfig(); err != nil {

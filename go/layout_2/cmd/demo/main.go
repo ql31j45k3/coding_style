@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"layout_2/configs"
-	deliveryHttp1 "layout_2/internal/example-1"
-	deliveryHttp "layout_2/internal/example-2/delivery/http"
+	deliveryHttp "layout_2/internal/delivery/http"
 	"layout_2/internal/libs/container"
 	"layout_2/internal/libs/mongodb"
 
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/pyroscope-io/pyroscope/pkg/agent/profiler"
 
 	"fmt"
 	"layout_2/internal/libs/logs"
@@ -33,6 +34,20 @@ func main() {
 	}
 	configs.SetReloadFunc(logs.ReloadSetLogLevel)
 
+	if configs.App.GetPyroscopeIsRunStart() {
+		_, err := profiler.Start(profiler.Config{
+			ApplicationName: configs.App.GetServiceName(),
+			ServerAddress:   configs.App.GetPyroscopeURL(),
+		})
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"err": err,
+			}).Error("profiler.Start fail")
+			return
+		}
+	}
+
 	log.WithFields(log.Fields{
 		"app": fmt.Sprintf("%+v", configs.App),
 	}).Debug("check configs app value")
@@ -43,13 +58,6 @@ func main() {
 		log.WithFields(log.Fields{
 			"err": err,
 		}).Error("container.ProvideInfra")
-		return
-	}
-
-	if err := deliveryHttp1.Init(); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Error("deliveryHttp1.Init")
 		return
 	}
 

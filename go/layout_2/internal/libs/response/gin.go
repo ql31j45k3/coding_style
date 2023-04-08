@@ -11,9 +11,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// BindJSON 取得 Request body 資料，JSON 資料轉行為 struct
-func BindJSON(c *gin.Context, obj interface{}) error {
-	if err := c.BindJSON(obj); err != nil {
+// ShouldBindJSON 取得 Request body 資料，JSON 資料轉行為 struct
+func ShouldBindJSON(c *gin.Context, obj interface{}) error {
+	if err := c.ShouldBindJSON(obj); err != nil {
 		var messages string
 		if _, ok := err.(validator.ValidationErrors); ok {
 			for _, err2 := range err.(validator.ValidationErrors) {
