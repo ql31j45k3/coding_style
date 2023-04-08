@@ -78,3 +78,20 @@ func (cond *StudentCond) ParseGet(c *gin.Context) error {
 
 	return nil
 }
+
+type ResponseStudentCreate struct {
+	ID string `json:"id"`
+}
+
+type ResponseStudent struct {
+	Name string `json:"name"`
+
+	Gender int `json:"gender"`
+	Status int `json:"status"`
+}
+
+type ResponseStudentGet struct {
+	Page response.Pagination `json:"page"`
+
+	Students []ResponseStudent `json:"students"`
+}

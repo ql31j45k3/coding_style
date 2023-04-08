@@ -37,10 +37,6 @@ type studentRouter struct {
 	StudentHandlerCond
 }
 
-type responseStudentCreate struct {
-	ID string `json:"id"`
-}
-
 func (sr *studentRouter) create(c *gin.Context) {
 	var student entity.Student
 	if err := response.ShouldBindJSON(c, &student); err != nil {
@@ -59,7 +55,7 @@ func (sr *studentRouter) create(c *gin.Context) {
 		return
 	}
 
-	result := responseStudentCreate{
+	result := vo.ResponseStudentCreate{
 		ID: fmt.Sprint(rowID),
 	}
 
@@ -88,13 +84,6 @@ func (sr *studentRouter) updateID(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-type responseStudent struct {
-	Name string `json:"name"`
-
-	Gender int `json:"gender"`
-	Status int `json:"status"`
-}
-
 func (sr *studentRouter) getID(c *gin.Context) {
 	cond := vo.StudentCond{}
 	if err := cond.ParseID(c); err != nil {
@@ -102,7 +91,7 @@ func (sr *studentRouter) getID(c *gin.Context) {
 		return
 	}
 
-	var responseStudent responseStudent
+	var responseStudent vo.ResponseStudent
 
 	student, err := sr.StudentUseCase.GetID(cond)
 	if err != nil {
@@ -118,12 +107,6 @@ func (sr *studentRouter) getID(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewResponseSuccess(responseStudent))
 }
 
-type responseStudentGet struct {
-	Page response.Pagination `json:"page"`
-
-	Students []responseStudent `json:"students"`
-}
-
 func (sr *studentRouter) get(c *gin.Context) {
 	cond := vo.StudentCond{}
 	if err := cond.ParseGet(c); err != nil {
@@ -131,7 +114,7 @@ func (sr *studentRouter) get(c *gin.Context) {
 		return
 	}
 
-	var responseStudents []responseStudent
+	var responseStudents []vo.ResponseStudent
 
 	students, count, err := sr.StudentUseCase.Get(cond)
 	if err != nil {
@@ -144,7 +127,7 @@ func (sr *studentRouter) get(c *gin.Context) {
 		return
 	}
 
-	result := responseStudentGet{
+	result := vo.ResponseStudentGet{
 		Page:     cond.Pagination,
 		Students: responseStudents,
 	}
