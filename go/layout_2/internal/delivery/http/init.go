@@ -9,6 +9,14 @@ import (
 )
 
 func Init() error {
+	if err := initStudent(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func initStudent() error {
 	if err := container.Get().Provide(repoStudent.NewStudentRepository); err != nil {
 		return fmt.Errorf("container.Provide(repository.NewStudentRepository), err: %w", err)
 	}
