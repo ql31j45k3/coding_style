@@ -7,7 +7,8 @@ import (
 const (
 	TimezoneUTC = "UTC"
 
-	TimeLayoutSecond = "2006-01-02 15:04:05"
+	// 改使用官方包的 format
+	//TimeLayoutSecond = time.DateTime
 )
 
 func TimeNowUTC() time.Time {
